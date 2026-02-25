@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gün Işığım</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lora:ital,wght@0,400;0,500;1,400&family=Nunito:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&family=Mulish:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════ */
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: #F5EDE0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px 16px 40px;
+  overflow-x: hidden;
+}
+body::before {
+  content:''; position:fixed; inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 0%, rgba(255,210,100,.28) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 90% 10%, rgba(255,140,66,.16) 0%, transparent 55%);
+  z-index:0; pointer-events:none;
+}
+
+/* ═══════════════════════════════════════
+   PHONE SHELL
+═══════════════════════════════════════ */
+.phone {
+  position:relative; width:390px;
+  background:#FFFAF5; border-radius:48px;
+  box-shadow:0 40px 120px rgba(255,140,66,.2), 0 8px 32px rgba(0,0,0,.1), inset 0 1px 0 rgba(255,255,255,.9);
+  overflow:hidden; z-index:1; min-height:844px;
+  display:flex; flex-direction:column;
+}
+.status-bar {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:16px 26px 8px; font-size:12px; font-weight:700; color:#7A4419;
+  background:#FFFAF5; position:sticky; top:0; z-index:30; flex-shrink:0;
+}
+
+/* ═══════════════════════════════════════
+   PAGE SYSTEM
+═══════════════════════════════════════ */
+.page { display:none; flex-direction:column; flex:1; min-height:0; }
+.page.active { display:flex; animation:pageIn .32s cubic-bezier(.4,0,.2,1) both; }
+.page.back   { animation:pageInL .32s cubic-bezier(.4,0,.2,1) both; }
+@keyframes pageIn  { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+@keyframes pageInL { from{opacity:0;transform:translateX(-20px)} to{opacity:1;transform:translateX(0)} }
+
+.scroll-content { flex:1; overflow-y:auto; overflow-x:hidden; scrollbar-width:none; }
+.scroll-content::-webkit-scrollbar { display:none; }
+
+/* ═══════════════════════════════════════
+   BOTTOM NAV
+═══════════════════════════════════════ */
+.bottom-nav {
+  background:rgba(255,255,255,.93); backdrop-filter:blur(20px);
+  border-top:1px solid rgba(255,200,130,.3);
+  padding:10px 20px 22px;
+  display:flex; justify-content:space-between; align-items:center;
+  flex-shrink:0; position:relative; z-index:20;
+}
+.ni-wrap { display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; padding:5px 10px; border-radius:14px; transition:all .2s; }
+.ni-wrap .ni { font-size:22px; line-height:1; }
+.ni-wrap .nl { font-size:10px; font-weight:700; color:rgba(122,68,25,.4); }
+.ni-wrap.active .nl { color:#FF8C42; }
+.ni-wrap.active { background:rgba(255,200,100,.12); }
+.nav-fab {
+  width:56px; height:56px; border-radius:20px;
+  background:linear-gradient(135deg,#FFB347,#FF8C42);
+  display:flex; align-items:center; justify-content:center; font-size:26px;
+  box-shadow:0 6px 20px rgba(255,140,66,.42);
+  cursor:pointer; margin-top:-20px; border:3px solid white;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);
+}
+.nav-fab:hover { transform:scale(1.1) rotate(8deg); }
+
+/* ═══════════════════════════════════════
+   SHARED COMPONENTS
+═══════════════════════════════════════ */
+/* Toast */
+.toast {
+  position:fixed; top:58px; left:50%;
+  transform:translateX(-50%) translateY(-90px);
+  background:linear-gradient(135deg,#2D1B00,#7A4419);
+  color:white; padding:11px 22px; border-radius:20px;
+  font-size:13px; font-weight:600; z-index:999;
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1);
+  white-space:nowrap; box-shadow:0 8px 28px rgba(0,0,0,.22); pointer-events:none;
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+/* Particle */
+.particle { position:fixed; width:8px; height:8px; border-radius:2px; pointer-events:none; z-index:998; animation:pFall 1s ease-out forwards; }
+@keyframes pFall { 0%{transform:translate(0,0) rotate(0deg);opacity:1} 100%{transform:translate(var(--dx),110px) rotate(360deg);opacity:0} }
+
+/* Tooltip */
+.hm-tooltip {
+  position:fixed; background:#2D1B00; color:white;
+  padding:6px 10px; border-radius:10px; font-size:11px; font-weight:600;
+  pointer-events:none; z-index:999; opacity:0; transition:opacity .15s;
+  white-space:nowrap; box-shadow:0 4px 12px rgba(0,0,0,.25);
+}
+.hm-tooltip.show { opacity:1; }
+
+/* Sec title */
+.sec-title { font-family:'Playfair Display',serif; font-size:17px; font-weight:600; color:#2D1B00; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.sec-dot { width:6px; height:6px; border-radius:50%; background:#FF8C42; flex-shrink:0; }
+.sec-label { font-size:11px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; color:rgba(122,68,25,.45); margin-bottom:12px; }
+
+/* Page header shared */
+.ph {
+  padding:8px 24px 22px; position:relative; overflow:hidden;
+  background:linear-gradient(160deg,#FFECD2 0%,#FFD08A 65%,#FFB347 100%);
+}
+.ph-icon { position:absolute; right:18px; top:50%; transform:translateY(-50%); font-size:56px; opacity:.12; }
+.ph-back { width:32px; height:32px; border-radius:10px; background:rgba(45,27,0,.08); border:none; font-size:14px; color:#7A4419; cursor:pointer; margin-bottom:8px; display:block; }
+.ph-title { font-family:'Playfair Display',serif; font-size:24px; font-weight:700; color:#2D1B00; }
+.ph-sub { font-size:12px; color:#7A4419; font-weight:600; opacity:.7; margin-top:4px; }
+
+/* Modal overlay */
+.modal-overlay {
+  position:absolute; inset:0; background:rgba(45,27,0,.55); backdrop-filter:blur(6px);
+  z-index:50; display:flex; align-items:flex-end;
+  opacity:0; pointer-events:none; transition:opacity .3s ease;
+}
+.modal-overlay.show { opacity:1; pointer-events:all; }
+.modal-sheet {
+  background:white; border-radius:28px 28px 0 0; width:100%; padding:24px 24px 36px;
+  transform:translateY(100%); transition:transform .4s cubic-bezier(.34,1.56,.64,1);
+  max-height:85vh; overflow-y:auto;
+}
+.modal-overlay.show .modal-sheet { transform:translateY(0); }
+.modal-handle { width:40px; height:4px; border-radius:2px; background:rgba(0,0,0,.15); margin:0 auto 20px; }
+.modal-title { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:#2D1B00; margin-bottom:20px; text-align:center; }
+
+/* Form */
+.form-group { margin-bottom:16px; }
+.form-label { font-size:11px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:rgba(122,68,25,.55); margin-bottom:7px; display:block; }
+.form-input {
+  width:100%; padding:13px 16px; border-radius:14px;
+  border:1.5px solid rgba(255,200,130,.35); background:#FFFAF5;
+  font-family:'Nunito',sans-serif; font-size:15px; font-weight:600; color:#2D1B00;
+  outline:none; transition:border-color .2s;
+}
+.form-input:focus { border-color:#FF8C42; box-shadow:0 0 0 3px rgba(255,140,66,.12); }
+
+.save-btn {
+  width:100%; padding:16px; border-radius:18px;
+  background:linear-gradient(135deg,#FFB347,#FF8C42); border:none;
+  font-family:'Nunito',sans-serif; font-size:15px; font-weight:700; color:white;
+  cursor:pointer; margin-top:8px; box-shadow:0 6px 20px rgba(255,140,66,.35);
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);
+}
+.save-btn:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(255,140,66,.45); }
+
+/* Avatar / emoji pickers */
+.avatar-picker { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+.avatar-opt, .emoji-opt {
+  border-radius:14px; background:#FFF4E6; border:2px solid rgba(255,200,130,.3);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all .2s cubic-bezier(.34,1.56,.64,1);
+}
+.avatar-opt { width:48px; height:48px; font-size:24px; }
+.emoji-opt { width:52px; height:52px; font-size:26px; }
+.avatar-opt:hover,.emoji-opt:hover { transform:scale(1.1); }
+.avatar-opt.sel,.emoji-opt.sel { border-color:#FF8C42; background:rgba(255,200,100,.2); box-shadow:0 3px 10px rgba(255,140,66,.3); }
+.emoji-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:6px; }
+
+/* Fade in */
+.fi { animation:fi .5s ease both; }
+.fi1{animation-delay:.08s} .fi2{animation-delay:.16s} .fi3{animation-delay:.24s}
+.fi4{animation-delay:.32s} .fi5{animation-delay:.4s} .fi6{animation-delay:.48s}
+@keyframes fi { from{opacity:0;transform:translateY(13px)} to{opacity:1;transform:translateY(0)} }
+
+/* ═══════════════════════════════════════
+   PAGE 1 — ANA SAYFA
+═══════════════════════════════════════ */
+.home-header {
+  padding:8px 24px 24px; position:relative; overflow:hidden;
+  background:linear-gradient(160deg,#FFECD2 0%,#FFD08A 65%,#FFB347 100%);
+}
+.sun-deco {
+  position:absolute; right:-30px; top:-30px; width:170px; height:170px; border-radius:50%;
+  background:radial-gradient(circle,rgba(255,225,100,.9) 25%,rgba(255,160,50,.4) 65%,transparent 100%);
+  animation:sunPulse 4s ease-in-out infinite;
+}
+@keyframes sunPulse { 0%,100%{transform:scale(1);opacity:.8} 50%{transform:scale(1.08);opacity:1} }
+.hc { position:relative; z-index:1; }
+.greeting { font-size:12px; font-weight:700; color:#7A4419; opacity:.8; letter-spacing:.5px; }
+.username { font-family:'Playfair Display',serif; font-size:28px; font-weight:700; color:#2D1B00; line-height:1.2; margin-top:2px; }
+.lvl-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.6); backdrop-filter:blur(8px); border:1px solid rgba(255,180,80,.4); border-radius:20px; padding:4px 12px; font-size:12px; font-weight:700; color:#7A4419; }
+.zodiac-badge { display:inline-flex; align-items:center; gap:5px; background:rgba(255,255,255,.55); backdrop-filter:blur(8px); border:1px solid rgba(255,180,80,.35); border-radius:16px; padding:3px 10px; font-size:12px; font-weight:700; color:#7A4419; animation:zodiacPop .5s cubic-bezier(.34,1.56,.64,1) both; }
+@keyframes zodiacPop { from{opacity:0;transform:scale(.6)} to{opacity:1;transform:scale(1)} }
+.badges-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:8px; }
+
+.streak-box { position:relative; z-index:1; margin-top:14px; background:rgba(255,255,255,.55); backdrop-filter:blur(10px); border-radius:20px; padding:13px 16px; border:1px solid rgba(255,200,100,.4); }
+.streak-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.streak-lbl { font-size:12px; font-weight:700; color:#7A4419; }
+.streak-num { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:#FF8C42; }
+.days { display:flex; gap:5px; }
+.dd { width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; }
+.dd.done { background:linear-gradient(135deg,#FFB347,#FF8C42); color:white; box-shadow:0 3px 8px rgba(255,140,66,.4); }
+.dd.today { background:linear-gradient(135deg,#FFE566,#FFB347); color:#2D1B00; animation:todayGlow 2s ease-in-out infinite; }
+@keyframes todayGlow { 0%,100%{box-shadow:0 3px 12px rgba(255,200,50,.5)} 50%{box-shadow:0 3px 20px rgba(255,200,50,.85)} }
+.dd.pend { background:rgba(255,200,120,.2); color:rgba(122,68,25,.35); border:1px dashed rgba(255,180,80,.4); }
+
+.home-body { padding:18px 20px 10px; }
+
+/* Progress card */
+.prog-card { background:linear-gradient(135deg,#FF8C42,#FFB347,#FFD166); border-radius:24px; padding:18px 20px; margin-bottom:22px; position:relative; overflow:hidden; box-shadow:0 8px 32px rgba(255,140,66,.32); }
+.prog-card::before { content:''; position:absolute; top:-40px; right:-40px; width:150px; height:150px; border-radius:50%; background:rgba(255,255,255,.14); }
+.prog-inner { display:flex; justify-content:space-between; align-items:center; position:relative; z-index:1; }
+.prog-txt h3 { font-family:'Playfair Display',serif; font-size:18px; font-weight:700; color:white; }
+.prog-txt p { font-size:12px; color:rgba(255,255,255,.82); font-weight:500; margin-top:4px; }
+.prog-ring { position:relative; width:72px; height:72px; }
+.prog-ring svg { transform:rotate(-90deg); }
+.prog-num { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.prog-num span { font-family:'Playfair Display',serif; font-size:17px; font-weight:700; color:white; line-height:1; }
+.prog-num small { font-size:9px; color:rgba(255,255,255,.75); font-weight:700; }
+
+/* Lights scroll */
+.lights-scroll { display:flex; gap:14px; overflow-x:auto; padding-bottom:8px; scrollbar-width:none; margin-bottom:22px; }
+.lights-scroll::-webkit-scrollbar { display:none; }
+.lp { flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer; }
+.av-ring { width:58px; height:58px; border-radius:50%; padding:3px; transition:all .2s; }
+.av-ring.on { background:linear-gradient(135deg,#FFD166,#FF8C42,#FFB347); box-shadow:0 4px 16px rgba(255,160,50,.4); animation:ringP 3s ease-in-out infinite; }
+.av-ring.off { background:linear-gradient(135deg,#ddd,#bbb); }
+@keyframes ringP { 0%,100%{box-shadow:0 4px 16px rgba(255,160,50,.38)} 50%{box-shadow:0 4px 24px rgba(255,160,50,.65)} }
+.av-inner { width:100%; height:100%; border-radius:50%; background:#F9ECD9; display:flex; align-items:center; justify-content:center; font-size:22px; border:2px solid white; }
+.pname { font-size:11px; font-weight:700; color:#7A4419; text-align:center; max-width:60px; }
+.pstatus { font-size:10px; font-weight:700; color:#4CAF7D; }
+.pstatus.away { color:rgba(122,68,25,.4); }
+.add-circle { width:58px; height:58px; border-radius:50%; border:2px dashed rgba(255,180,80,.5); display:flex; align-items:center; justify-content:center; font-size:24px; color:#FF8C42; background:rgba(255,220,140,.1); cursor:pointer; transition:all .2s; }
+
+/* Activity grid */
+.act-grid { display:grid; grid-template-columns:1fr 1fr; gap:11px; margin-bottom:22px; }
+.act-card { background:rgba(255,255,255,.82); backdrop-filter:blur(12px); border-radius:20px; padding:15px; cursor:pointer; transition:all .3s cubic-bezier(.34,1.56,.64,1); border:1.5px solid rgba(255,200,130,.18); box-shadow:0 4px 14px rgba(255,140,66,.08); position:relative; overflow:hidden; }
+.act-card:hover { transform:translateY(-4px) scale(1.02); }
+.act-card.done { border-color:rgba(255,180,80,.45); background:linear-gradient(135deg,rgba(255,240,200,.7),rgba(255,255,255,.88)); }
+.ci { width:36px; height:36px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:18px; margin-bottom:9px; }
+.ci.g{background:rgba(76,175,125,.12)} .ci.b{background:rgba(91,155,213,.12)}
+.ci.r{background:rgba(232,116,138,.12)} .ci.p{background:rgba(155,127,212,.12)}
+.ci.o{background:rgba(255,140,66,.11)} .ci.y{background:rgba(255,209,102,.18)}
+.an { font-size:13px; font-weight:700; color:#2D1B00; margin-bottom:3px; line-height:1.3; }
+.as { font-size:11px; color:rgba(122,68,25,.52); font-weight:500; }
+.dc { position:absolute; top:11px; right:11px; width:20px; height:20px; border-radius:50%; background:linear-gradient(135deg,#FFB347,#FF8C42); display:flex; align-items:center; justify-content:center; font-size:10px; color:white; opacity:0; transform:scale(0); transition:all .3s cubic-bezier(.34,1.56,.64,1); }
+.act-card.done .dc { opacity:1; transform:scale(1); }
+
+/* Quick access */
+.quick-card { flex:1; border-radius:18px; padding:14px 16px; cursor:pointer; transition:all .2s; }
+.quick-card:hover { transform:translateY(-2px); }
+
+/* Badge chips */
+.badge-scroll { display:flex; gap:9px; overflow-x:auto; scrollbar-width:none; padding-bottom:4px; margin-bottom:20px; }
+.badge-scroll::-webkit-scrollbar { display:none; }
+.bc { flex-shrink:0; display:flex; align-items:center; gap:6px; background:rgba(255,255,255,.78); border:1.5px solid rgba(255,200,130,.28); border-radius:14px; padding:7px 12px; font-size:11px; font-weight:700; color:#7A4419; cursor:pointer; backdrop-filter:blur(8px); }
+.bc.earned { background:linear-gradient(135deg,rgba(255,220,120,.35),rgba(255,255,255,.88)); border-color:rgba(255,180,60,.45); box-shadow:0 3px 10px rgba(255,180,60,.18); }
+.bc.locked { opacity:.4; }
+
+/* ═══════════════════════════════════════
+   PAGE 2 — ANONİM IŞIK
+═══════════════════════════════════════ */
+#page-anon { background:linear-gradient(170deg,#0D0A1A 0%,#1A1433 50%,#0D1525 100%); color:white; }
+.stars-canvas { position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:0; }
+.star { position:absolute; border-radius:50%; background:white; animation:twinkle var(--d) ease-in-out infinite; animation-delay:var(--dly); }
+@keyframes twinkle { 0%,100%{opacity:.1;transform:scale(1)} 50%{opacity:.7;transform:scale(1.4)} }
+.anon-inner { position:relative; z-index:1; flex:1; display:flex; flex-direction:column; min-height:0; }
+.anon-topbar { display:flex; align-items:center; justify-content:space-between; padding:12px 22px 8px; }
+.anon-back { width:36px; height:36px; border-radius:12px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.09); display:flex; align-items:center; justify-content:center; font-size:15px; color:#B8AECF; cursor:pointer; }
+.anon-page-title { font-family:'Cormorant Garamond',serif; font-size:16px; color:#EDE8F5; }
+.anon-hero { padding:12px 24px 16px; text-align:center; }
+.lantern-wrap { display:inline-block; position:relative; margin-bottom:12px; }
+.lantern-glow { position:absolute; inset:-20px; border-radius:50%; background:radial-gradient(circle,rgba(245,200,66,.2) 0%,transparent 70%); animation:glowP 4s ease-in-out infinite; }
+@keyframes glowP { 0%,100%{opacity:.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.2)} }
+.lantern { font-size:62px; line-height:1; display:block; filter:drop-shadow(0 0 28px rgba(245,200,66,.5)); animation:floatL 4s ease-in-out infinite; }
+@keyframes floatL { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-10px) rotate(2deg)} }
+.anon-title { font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:600; color:#EDE8F5; margin-bottom:6px; line-height:1.3; }
+.anon-sub { font-size:13px; color:#6B5F8A; line-height:1.65; max-width:270px; margin:0 auto; }
+.anon-sub em { color:#F5C842; font-style:normal; font-weight:600; }
+.anon-scroll { flex:1; overflow-y:auto; padding:0 20px 20px; scrollbar-width:none; }
+.anon-scroll::-webkit-scrollbar { display:none; }
+.a-sec-lbl { font-size:10px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:#6B5F8A; margin-bottom:10px; padding-left:3px; }
+.ppl-list { display:flex; flex-direction:column; gap:9px; margin-bottom:20px; }
+.p-row { display:flex; align-items:center; gap:13px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); border-radius:18px; padding:13px 15px; cursor:pointer; transition:all .3s cubic-bezier(.34,1.56,.64,1); position:relative; overflow:hidden; }
+.p-row::before { content:''; position:absolute; left:0;top:0;bottom:0; width:3px; border-radius:0 2px 2px 0; background:transparent; transition:all .3s; }
+.p-row:hover,.p-row.sel { background:rgba(245,200,66,.06); border-color:rgba(245,200,66,.2); transform:translateX(4px); }
+.p-row:hover::before,.p-row.sel::before { background:#F5C842; }
+.p-row.sel { background:rgba(245,200,66,.1); border-color:rgba(245,200,66,.32); }
+.p-av { width:44px; height:44px; border-radius:14px; background:rgba(255,255,255,.06); display:flex; align-items:center; justify-content:center; font-size:21px; flex-shrink:0; border:1px solid rgba(255,255,255,.08); }
+.p-info { flex:1; }
+.p-nm { font-size:14px; font-weight:600; color:#EDE8F5; margin-bottom:3px; }
+.p-ht { font-size:12px; color:#6B5F8A; }
+.p-sel { width:22px; height:22px; border-radius:50%; border:2px solid rgba(255,255,255,.14); display:flex; align-items:center; justify-content:center; font-size:11px; transition:all .3s cubic-bezier(.34,1.56,.64,1); flex-shrink:0; }
+.p-row.sel .p-sel { background:#F5C842; border-color:#F5C842; color:#0D0A1A; font-weight:700; }
+.composer-box { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:20px; overflow:hidden; margin-bottom:16px; transition:border-color .3s; }
+.composer-box.active { border-color:rgba(245,200,66,.28); box-shadow:0 0 28px rgba(245,200,66,.07); }
+.comp-top { padding:14px 17px 12px; border-bottom:1px solid rgba(255,255,255,.05); }
+.comp-lbl { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#6B5F8A; margin-bottom:9px; }
+.presets { display:flex; gap:7px; flex-wrap:wrap; }
+.pr { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:6px 11px; font-size:11px; color:#B8AECF; cursor:pointer; transition:all .2s; white-space:nowrap; }
+.pr:hover,.pr.on { background:rgba(245,200,66,.12); border-color:rgba(245,200,66,.28); color:#F5C842; }
+.comp-body { padding:13px 17px; }
+.anon-note { display:flex; align-items:center; gap:8px; background:rgba(62,214,197,.06); border:1px solid rgba(62,214,197,.14); border-radius:12px; padding:9px 13px; margin-bottom:11px; }
+.anon-note-txt { font-size:11px; color:#3ED6C5; line-height:1.4; opacity:.85; }
+.msg-prev { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:13px; padding:13px 15px; font-family:'Cormorant Garamond',serif; font-size:16px; font-style:italic; color:rgba(245,230,180,.92); line-height:1.6; min-height:60px; }
+.send-btn-anon { width:100%; padding:17px; border-radius:20px; background:linear-gradient(135deg,#F5C842,#F59B3A); border:none; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; color:#0D0A1A; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 8px 28px rgba(245,200,66,.28); transition:all .3s cubic-bezier(.34,1.56,.64,1); }
+.send-btn-anon:hover { transform:translateY(-2px); }
+.sent-ov { position:absolute; inset:0; background:#0D0A1A; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; z-index:40; opacity:0; pointer-events:none; transition:opacity .5s ease; padding:40px; }
+.sent-ov.show { opacity:1; pointer-events:all; }
+.sent-lantern { font-size:78px; animation:riseL 3s ease-out forwards; }
+@keyframes riseL { 0%{transform:translateY(40px);opacity:0} 30%{opacity:1} 100%{transform:translateY(-18px);filter:drop-shadow(0 0 50px rgba(245,200,66,.8))} }
+.sent-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:600; color:#EDE8F5; text-align:center; animation:fuY .6s .4s both; }
+.sent-sub { font-size:13px; color:#6B5F8A; text-align:center; line-height:1.65; max-width:250px; animation:fuY .6s .6s both; }
+.sent-back { padding:11px 28px; border-radius:14px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1); color:#B8AECF; font-size:13px; font-weight:600; cursor:pointer; animation:fuY .6s .8s both; transition:all .2s; }
+@keyframes fuY { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+.lp-float { position:fixed; pointer-events:none; z-index:999; font-size:20px; animation:floatUp 2.5s ease-out forwards; }
+@keyframes floatUp { 0%{transform:translate(0,0) scale(1);opacity:1} 100%{transform:translate(var(--dx),-280px) scale(.3);opacity:0} }
+
+/* ═══════════════════════════════════════
+   PAGE 3 — KÖTÜ GÜNLER
+═══════════════════════════════════════ */
+#page-bad { background:#F0EEF7; }
+.rain-wrap { position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden; opacity:.16; }
+.rd { position:absolute; width:1.5px; background:linear-gradient(to bottom,transparent,#7B9EC8); border-radius:4px; animation:rainFall var(--d) linear infinite; animation-delay:var(--dly); top:-80px; }
+@keyframes rainFall { to{transform:translateY(130vh)} }
+.bad-inner { position:relative; z-index:1; flex:1; display:flex; flex-direction:column; min-height:0; }
+.bad-topbar { padding:12px 24px 0; display:flex; align-items:center; justify-content:space-between; }
+.back-btn-bad { width:36px; height:36px; border-radius:12px; background:rgba(44,40,84,.07); display:flex; align-items:center; justify-content:center; font-size:15px; color:#5A567A; cursor:pointer; border:none; transition:background .2s; }
+.bad-scroll { flex:1; overflow-y:auto; padding:0 20px 20px; scrollbar-width:none; }
+.bad-scroll::-webkit-scrollbar { display:none; }
+.bad-hero { padding:14px 4px 18px; text-align:center; }
+.cloud-scene { height:90px; display:flex; align-items:center; justify-content:center; position:relative; margin-bottom:12px; }
+.cloud-big { font-size:66px; filter:drop-shadow(0 8px 18px rgba(123,158,200,.28)); animation:cloudF 6s ease-in-out infinite; }
+@keyframes cloudF { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.cloud-sm { position:absolute; font-size:30px; opacity:.45; animation:cloudF 8s ease-in-out infinite; }
+.cloud-sm.l{left:30px;top:28px;animation-delay:-3s} .cloud-sm.r{right:30px;top:36px;animation-delay:-1s}
+.bad-title { font-family:'Lora',serif; font-size:22px; font-weight:500; color:#2C2854; margin-bottom:8px; line-height:1.35; }
+.bad-sub { font-size:13px; color:#5A567A; line-height:1.65; max-width:275px; margin:0 auto; }
+.b-sec-lbl { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#9B97B5; margin-bottom:11px; }
+.mood-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; margin-bottom:18px; }
+.mood-btn { display:flex; flex-direction:column; align-items:center; gap:5px; background:rgba(255,255,255,.85); border:1.5px solid rgba(44,40,84,.07); border-radius:18px; padding:13px 6px; cursor:pointer; transition:all .3s cubic-bezier(.34,1.56,.64,1); box-shadow:0 2px 8px rgba(44,40,84,.09); }
+.mood-btn:hover { transform:translateY(-3px); }
+.mood-btn.on { border-color:#A89CC8; background:linear-gradient(135deg,rgba(168,156,200,.15),rgba(255,255,255,.9)); box-shadow:0 6px 18px rgba(168,156,200,.28); transform:translateY(-3px) scale(1.04); }
+.me{font-size:25px;line-height:1} .ml{font-size:10px;font-weight:600;color:#5A567A;text-align:center}
+.gentle-card { background:linear-gradient(135deg,rgba(168,156,200,.14),rgba(184,200,222,.13)); border:1px solid rgba(168,156,200,.23); border-radius:22px; padding:17px 19px; position:relative; overflow:hidden; margin-bottom:18px; }
+.gentle-card::before { content:'"'; position:absolute; top:-10px; left:13px; font-family:'Lora',serif; font-size:76px; color:#A89CC8; opacity:.18; line-height:1; }
+.gc-txt { font-family:'Lora',serif; font-size:15px; font-style:italic; color:#2C2854; line-height:1.65; position:relative; z-index:1; }
+.gc-sig { margin-top:9px; font-size:12px; color:#9B97B5; font-weight:500; }
+.mini-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:18px; }
+.mini-card { background:rgba(255,255,255,.85); border:1px solid rgba(44,40,84,.06); border-radius:17px; padding:13px 14px; cursor:pointer; transition:all .3s cubic-bezier(.34,1.56,.64,1); box-shadow:0 2px 10px rgba(44,40,84,.08); display:flex; align-items:center; gap:11px; }
+.mini-card:hover { transform:translateY(-2px); }
+.mini-card.done { background:linear-gradient(135deg,rgba(126,200,164,.14),rgba(255,255,255,.9)); border-color:rgba(126,200,164,.32); }
+.mi { width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; }
+.mi.lv{background:rgba(168,156,200,.14)} .mi.sg{background:rgba(126,200,164,.11)} .mi.bl{background:rgba(232,164,176,.11)} .mi.am{background:rgba(232,192,128,.13)}
+.mt{flex:1} .mn{font-size:12px;font-weight:700;color:#2C2854;margin-bottom:2px} .ms{font-size:10px;color:#9B97B5}
+.mck { width:20px; height:20px; border-radius:50%; border:2px solid #C8C5DC; display:flex; align-items:center; justify-content:center; transition:all .3s cubic-bezier(.34,1.56,.64,1); flex-shrink:0; font-size:11px; color:transparent; }
+.mini-card.done .mck { background:#7EC8A4; border-color:#7EC8A4; color:white; }
+.protect-card { background:linear-gradient(135deg,#E8E4F5,#D8E8F0); border:1px solid rgba(168,156,200,.28); border-radius:20px; padding:14px 17px; display:flex; align-items:center; gap:13px; margin-bottom:16px; }
+.prot-icon { width:44px; height:44px; border-radius:13px; background:rgba(255,255,255,.58); display:flex; align-items:center; justify-content:center; font-size:21px; flex-shrink:0; }
+.prot-txt h4{font-size:13px;font-weight:700;color:#2C2854;margin-bottom:3px} .prot-txt p{font-size:11px;color:#5A567A;line-height:1.5}
+.prot-badge { margin-left:auto; background:rgba(126,200,164,.18); border:1px solid rgba(126,200,164,.32); border-radius:10px; padding:4px 10px; font-size:11px; font-weight:700; color:#4A9A74; white-space:nowrap; flex-shrink:0; }
+.breathe-btn { width:100%; padding:15px; border-radius:19px; background:linear-gradient(135deg,rgba(168,156,200,.22),rgba(184,200,222,.28)); border:1.5px solid rgba(168,156,200,.28); font-family:'Mulish',sans-serif; font-size:14px; font-weight:700; color:#2C2854; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:9px; transition:all .3s; margin-bottom:12px; }
+.breathe-btn:hover { transform:translateY(-1px); }
+.emerg-btn { width:100%; padding:15px; border-radius:19px; background:linear-gradient(135deg,rgba(232,116,138,.12),rgba(255,255,255,.9)); border:1.5px solid rgba(232,116,138,.32); font-family:'Mulish',sans-serif; font-size:14px; font-weight:700; color:#C0304A; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:9px; transition:all .2s; }
+.emerg-btn:hover { background:rgba(232,116,138,.18); }
+.breathe-ov { position:absolute; inset:0; background:linear-gradient(160deg,#2C2854,#1A2840); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; z-index:40; opacity:0; pointer-events:none; transition:opacity .5s ease; padding:40px; }
+.breathe-ov.show { opacity:1; pointer-events:all; }
+.b-circle { width:148px; height:148px; border-radius:50%; background:radial-gradient(circle,rgba(168,156,200,.38),rgba(123,158,200,.14)); border:2px solid rgba(168,156,200,.28); display:flex; align-items:center; justify-content:center; font-size:48px; animation:bCircle 8s ease-in-out infinite; }
+@keyframes bCircle { 0%,100%{transform:scale(1);box-shadow:0 0 20px rgba(168,156,200,.2)} 50%{transform:scale(1.28);box-shadow:0 0 55px rgba(168,156,200,.38)} }
+.b-inst { font-family:'Lora',serif; font-size:22px; font-style:italic; color:rgba(255,255,255,.85); text-align:center; }
+.b-sub { font-size:12px; color:rgba(255,255,255,.38); text-align:center; }
+.b-close { padding:11px 26px; border-radius:14px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1); color:rgba(255,255,255,.58); font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; }
+
+/* ═══════════════════════════════════════
+   PAGE 4 — VERİ & İÇGÖRÜ
+═══════════════════════════════════════ */
+#page-insight { background:#FFFAF5; }
+.insight-body { padding:18px 20px 30px; }
+
+/* Morning card */
+.morning-card { background:linear-gradient(135deg,#2D1B00,#5A3010); border-radius:26px; padding:22px; margin-bottom:24px; box-shadow:0 10px 40px rgba(45,27,0,.25); position:relative; overflow:hidden; }
+.morning-card::before { content:''; position:absolute; top:-50px; right:-50px; width:180px; height:180px; border-radius:50%; background:radial-gradient(circle,rgba(255,200,66,.18) 0%,transparent 70%); }
+.mc-top { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.mc-icon { width:40px; height:40px; border-radius:13px; background:rgba(255,200,66,.15); border:1px solid rgba(255,200,66,.25); display:flex; align-items:center; justify-content:center; font-size:20px; }
+.mc-label { font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:rgba(255,200,100,.6); }
+.mc-name { font-size:13px; font-weight:700; color:rgba(255,230,180,.9); margin-top:1px; }
+.mc-msg { font-family:'Playfair Display',serif; font-size:16px; font-style:italic; color:rgba(255,240,210,.92); line-height:1.65; position:relative; z-index:1; min-height:60px; }
+.mc-msg.loading { opacity:.5; animation:pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:.5} 50%{opacity:.9} }
+.mc-footer { display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,200,100,.12); }
+.mc-date { font-size:11px; color:rgba(255,200,100,.45); font-weight:600; }
+.mc-refresh { display:flex; align-items:center; gap:5px; font-size:11px; font-weight:700; color:rgba(255,200,100,.6); background:rgba(255,200,66,.1); border:1px solid rgba(255,200,66,.2); border-radius:10px; padding:5px 10px; cursor:pointer; transition:all .2s; }
+.mc-refresh:hover { background:rgba(255,200,66,.2); }
+@keyframes spin { to{transform:rotate(360deg)} }
+
+/* Weekly card */
+.weekly-card { background:white; border-radius:24px; padding:20px; box-shadow:0 4px 20px rgba(255,140,66,.1); border:1px solid rgba(255,200,130,.18); margin-bottom:16px; }
+.week-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.week-nav-btn { width:32px; height:32px; border-radius:10px; background:rgba(255,200,100,.1); border:1px solid rgba(255,200,100,.25); display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer; color:#7A4419; transition:all .2s; }
+.week-nav-btn:hover { background:rgba(255,200,100,.22); }
+.week-range { font-family:'Playfair Display',serif; font-size:15px; font-weight:600; color:#2D1B00; }
+.narrative { font-family:'Playfair Display',serif; font-size:15px; font-style:italic; color:#4A2A08; line-height:1.7; background:linear-gradient(135deg,rgba(255,235,190,.4),rgba(255,255,255,.6)); border-left:3px solid #FF8C42; border-radius:0 14px 14px 0; padding:14px 16px; margin-bottom:18px; }
+.day-bars { display:flex; gap:6px; align-items:flex-end; height:80px; margin-bottom:8px; }
+.bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; height:100%; justify-content:flex-end; }
+.bar-col { width:100%; border-radius:8px 8px 4px 4px; transition:height .6s cubic-bezier(.34,1.56,.64,1); min-height:4px; position:relative; cursor:pointer; }
+.bar-col:hover { filter:brightness(1.1); }
+.bar-day { font-size:10px; font-weight:800; color:rgba(122,68,25,.4); }
+.bar-num { position:absolute; top:-18px; left:50%; transform:translateX(-50%); font-size:9px; font-weight:800; color:#FF8C42; opacity:0; transition:opacity .2s; white-space:nowrap; }
+.bar-col:hover .bar-num { opacity:1; }
+.week-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:4px; }
+.ws-item { background:rgba(255,200,100,.1); border-radius:14px; padding:10px; text-align:center; border:1px solid rgba(255,200,100,.2); }
+.ws-num { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:#FF8C42; line-height:1; }
+.ws-lbl { font-size:10px; font-weight:700; color:rgba(122,68,25,.5); margin-top:4px; line-height:1.3; }
+
+/* Correlation */
+.corr-card { background:white; border-radius:24px; padding:20px; box-shadow:0 4px 20px rgba(255,140,66,.1); border:1px solid rgba(255,200,130,.18); margin-bottom:16px; }
+.corr-title { font-family:'Playfair Display',serif; font-size:16px; font-weight:600; color:#2D1B00; margin-bottom:14px; }
+.ins-row { display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid rgba(255,200,100,.12); }
+.ins-row:last-child { border-bottom:none; padding-bottom:0; }
+.ins-ic { width:38px; height:38px; border-radius:12px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:18px; }
+.ins-ic.orange{background:rgba(255,140,66,.12)} .ins-ic.green{background:rgba(76,175,125,.12)} .ins-ic.blue{background:rgba(91,155,213,.12)} .ins-ic.rose{background:rgba(232,116,138,.12)}
+.ins-t { flex:1; }
+.ins-h { font-size:13px; font-weight:700; color:#2D1B00; margin-bottom:3px; }
+.ins-b { font-size:12px; color:rgba(122,68,25,.6); line-height:1.5; }
+.ins-badge { font-size:10px; font-weight:800; padding:3px 9px; border-radius:8px; white-space:nowrap; flex-shrink:0; margin-top:2px; }
+.ins-badge.pos{background:rgba(76,175,125,.12);color:#4CAF7D;border:1px solid rgba(76,175,125,.25)}
+.ins-badge.neg{background:rgba(232,116,138,.1);color:#E8748A;border:1px solid rgba(232,116,138,.22)}
+
+/* Heatmap */
+.heatmap-card { background:white; border-radius:24px; padding:20px; box-shadow:0 4px 20px rgba(255,140,66,.1); border:1px solid rgba(255,200,130,.18); margin-bottom:16px; }
+.hm-title { font-family:'Playfair Display',serif; font-size:16px; font-weight:600; color:#2D1B00; margin-bottom:4px; }
+.hm-sub { font-size:11px; color:rgba(122,68,25,.5); font-weight:600; margin-bottom:14px; }
+.hm-months { display:flex; gap:3px; overflow-x:auto; scrollbar-width:none; padding-bottom:4px; }
+.hm-months::-webkit-scrollbar { display:none; }
+.hm-month-col { display:flex; flex-direction:column; gap:2px; flex-shrink:0; }
+.hm-month-lbl { font-size:8px; font-weight:800; color:rgba(122,68,25,.4); text-align:center; margin-bottom:2px; letter-spacing:.3px; }
+.hm-week { display:flex; flex-direction:column; gap:2px; }
+.hm-day { width:10px; height:10px; border-radius:2px; cursor:pointer; transition:transform .15s; position:relative; }
+.hm-day:hover { transform:scale(1.5); z-index:2; }
+.hm-day[data-v="0"]{background:rgba(255,200,100,.12)} .hm-day[data-v="1"]{background:rgba(255,200,100,.35)} .hm-day[data-v="2"]{background:rgba(255,180,70,.55)} .hm-day[data-v="3"]{background:rgba(255,160,50,.72)} .hm-day[data-v="4"]{background:rgba(255,140,40,.85)} .hm-day[data-v="5"]{background:#FF8C42} .hm-day[data-v="6"]{background:#FF6A1A;box-shadow:0 0 4px rgba(255,100,26,.5)} .hm-day[data-v="7"]{background:#E85000;box-shadow:0 0 6px rgba(232,80,0,.6)}
+.hm-day.future{background:rgba(200,180,150,.08)!important;cursor:default}
+.hm-day.today{outline:2px solid #FF8C42;outline-offset:1px}
+.hm-legend { display:flex; align-items:center; gap:5px; margin-top:10px; justify-content:flex-end; }
+.hm-legend-lbl { font-size:10px; color:rgba(122,68,25,.4); font-weight:600; }
+.hm-legend-box { width:10px; height:10px; border-radius:2px; }
+
+/* Best day card */
+.best-day-card { background:linear-gradient(135deg,#FF8C42,#FFB347,#FFD166); border-radius:24px; padding:20px; box-shadow:0 8px 28px rgba(255,140,66,.3); margin-bottom:16px; position:relative; overflow:hidden; }
+.best-day-card::before { content:''; position:absolute; top:-40px; right:-40px; width:150px; height:150px; border-radius:50%; background:rgba(255,255,255,.12); }
+.bd-lbl { font-family:'Playfair Display',serif; font-size:14px; font-weight:600; color:rgba(255,255,255,.8); margin-bottom:10px; }
+.bd-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; position:relative; z-index:1; }
+.bd-item { background:rgba(255,255,255,.2); border-radius:14px; padding:12px; }
+.bd-num { font-family:'Playfair Display',serif; font-size:24px; font-weight:700; color:white; line-height:1; }
+.bd-desc { font-size:10px; color:rgba(255,255,255,.75); font-weight:700; margin-top:4px; }
+
+/* Monthly bars */
+.month-card { background:white; border-radius:24px; padding:20px; box-shadow:0 4px 20px rgba(255,140,66,.1); border:1px solid rgba(255,200,130,.18); margin-bottom:16px; }
+.month-title { font-family:'Playfair Display',serif; font-size:16px; font-weight:600; color:#2D1B00; margin-bottom:14px; }
+.st-bars { display:flex; flex-direction:column; gap:8px; }
+.st-row { display:flex; align-items:center; gap:10px; }
+.st-label { font-size:11px; font-weight:700; color:rgba(122,68,25,.5); width:28px; text-align:right; flex-shrink:0; }
+.st-bar-wrap { flex:1; height:10px; background:rgba(255,200,100,.12); border-radius:6px; overflow:hidden; }
+.st-bar-fill { height:100%; border-radius:6px; transition:width 1s cubic-bezier(.34,1.2,.64,1); }
+.st-val { font-size:11px; font-weight:800; color:#FF8C42; width:36px; }
+
+/* ═══════════════════════════════════════
+   PAGE 5 — İSTATİSTİK
+═══════════════════════════════════════ */
+#page-stats { background:#FFFAF5; }
+.stats-body { padding:18px 20px 10px; }
+.stats-big { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+.s-big-card { background:white; border-radius:22px; padding:18px 16px; box-shadow:0 4px 18px rgba(255,140,66,.1); border:1px solid rgba(255,200,130,.18); text-align:center; }
+.s-big-num { font-family:'Playfair Display',serif; font-size:36px; font-weight:700; color:#FF8C42; line-height:1; }
+.s-big-lbl { font-size:11px; font-weight:700; color:rgba(122,68,25,.55); margin-top:6px; }
+.chart-card { background:white; border-radius:22px; padding:18px; margin-bottom:18px; box-shadow:0 4px 16px rgba(255,140,66,.09); border:1px solid rgba(255,200,130,.15); }
+.ch-title { font-family:'Playfair Display',serif; font-size:15px; font-weight:600; color:#2D1B00; margin-bottom:14px; }
+.ch-bars { display:flex; align-items:flex-end; gap:5px; height:80px; }
+.ch-bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.ch-bar { width:100%; border-radius:6px; background:linear-gradient(to top,#FF8C42,#FFD166); min-height:4px; }
+.ch-day { font-size:9px; font-weight:700; color:rgba(122,68,25,.4); }
+.ab-row { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.ab-row:last-child { margin-bottom:0; }
+.ab-icon { font-size:20px; width:36px; text-align:center; }
+.ab-info { flex:1; }
+.ab-name { font-size:13px; font-weight:700; color:#2D1B00; margin-bottom:4px; }
+.ab-bar-wrap { height:6px; background:rgba(255,200,130,.2); border-radius:4px; overflow:hidden; }
+.ab-bar { height:100%; border-radius:4px; background:linear-gradient(to right,#FF8C42,#FFD166); }
+.ab-count { font-size:12px; font-weight:700; color:#FF8C42; white-space:nowrap; }
+.annual-card { background:linear-gradient(135deg,#FF8C42,#FFB347,#FFD166); border-radius:22px; padding:18px 20px; margin-bottom:18px; box-shadow:0 8px 28px rgba(255,140,66,.3); }
+.ac-title { font-family:'Playfair Display',serif; font-size:16px; font-weight:700; color:white; margin-bottom:12px; }
+.ac-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+.ac-item { background:rgba(255,255,255,.2); border-radius:14px; padding:12px 10px; text-align:center; }
+.ac-num { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:white; line-height:1; }
+.ac-lbl { font-size:10px; color:rgba(255,255,255,.8); font-weight:600; margin-top:4px; }
+
+/* ═══════════════════════════════════════
+   PAGE 6 — ROZETLER
+═══════════════════════════════════════ */
+#page-badges { background:#FFFAF5; }
+.badges-body { padding:18px 20px 10px; }
+.bp-card { background:linear-gradient(135deg,rgba(255,220,140,.3),rgba(255,255,255,.8)); border:1px solid rgba(255,200,100,.35); border-radius:22px; padding:16px 18px; margin-bottom:20px; }
+.bp-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.bp-lbl { font-size:13px; font-weight:700; color:#2D1B00; }
+.bp-count { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:#FF8C42; }
+.bp-bar { height:8px; background:rgba(255,200,130,.25); border-radius:6px; overflow:hidden; }
+.bp-fill { height:100%; border-radius:6px; background:linear-gradient(to right,#FF8C42,#FFD166); width:50%; }
+.badges-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.badge-card { background:white; border-radius:22px; padding:18px 16px; text-align:center; border:1.5px solid rgba(255,200,130,.2); box-shadow:0 4px 16px rgba(255,140,66,.09); transition:all .3s cubic-bezier(.34,1.56,.64,1); cursor:pointer; }
+.badge-card:hover { transform:translateY(-4px); box-shadow:0 10px 28px rgba(255,140,66,.18); }
+.badge-card.earned { border-color:rgba(255,180,60,.42); background:linear-gradient(135deg,rgba(255,235,180,.25),white); }
+.badge-card.locked { opacity:.45; filter:grayscale(.7); }
+.badge-emoji { font-size:36px; margin-bottom:10px; display:block; }
+.badge-name { font-size:12px; font-weight:700; color:#2D1B00; margin-bottom:5px; }
+.badge-desc { font-size:10px; color:rgba(122,68,25,.5); line-height:1.4; }
+.badge-tag { display:inline-block; margin-top:8px; border-radius:8px; padding:3px 9px; font-size:10px; font-weight:700; }
+.badge-tag.earned { background:rgba(76,175,125,.12); border:1px solid rgba(76,175,125,.28); color:#4CAF7D; }
+.badge-tag.locked { background:rgba(122,68,25,.07); border:1px solid rgba(122,68,25,.12); color:rgba(122,68,25,.4); }
+
+/* ═══════════════════════════════════════
+   PAGE 7 — AYARLAR
+═══════════════════════════════════════ */
+#page-settings { background:#FFFAF5; }
+.profile-avatar-wrap { display:flex; flex-direction:column; align-items:center; gap:10px; padding:22px 20px 18px; }
+.profile-avatar-big { width:88px; height:88px; border-radius:28px; background:linear-gradient(135deg,#FFD166,#FF8C42); display:flex; align-items:center; justify-content:center; font-size:42px; box-shadow:0 8px 28px rgba(255,140,66,.35); position:relative; cursor:pointer; transition:all .3s cubic-bezier(.34,1.56,.64,1); }
+.profile-avatar-big:hover { transform:scale(1.05); }
+.av-edit { position:absolute; bottom:-4px; right:-4px; width:26px; height:26px; border-radius:50%; background:white; border:2px solid #FF8C42; display:flex; align-items:center; justify-content:center; font-size:12px; }
+.profile-name-big { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:#2D1B00; text-align:center; }
+.profile-zodiac-big { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.7); backdrop-filter:blur(8px); border:1px solid rgba(255,180,80,.35); border-radius:20px; padding:5px 14px; font-size:13px; font-weight:700; color:#7A4419; }
+.settings-body { padding:4px 20px 20px; }
+.settings-section { background:white; border-radius:22px; padding:6px 0; box-shadow:0 4px 16px rgba(255,140,66,.09); border:1px solid rgba(255,200,130,.18); margin-bottom:16px; }
+.settings-section-title { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:rgba(122,68,25,.5); padding:12px 18px 6px; }
+.settings-row { display:flex; align-items:center; gap:14px; padding:13px 18px; cursor:pointer; transition:background .15s; border-bottom:1px solid rgba(255,200,130,.12); }
+.settings-row:last-child { border-bottom:none; }
+.settings-row:hover { background:rgba(255,200,100,.07); }
+.sr-icon { width:36px; height:36px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.sr-icon.orange{background:rgba(255,140,66,.12)} .sr-icon.blue{background:rgba(91,155,213,.12)} .sr-icon.green{background:rgba(76,175,125,.12)} .sr-icon.rose{background:rgba(232,116,138,.12)} .sr-icon.purple{background:rgba(155,127,212,.12)}
+.sr-txt { flex:1; }
+.sr-label { font-size:14px; font-weight:600; color:#2D1B00; }
+.sr-value { font-size:12px; color:rgba(122,68,25,.5); margin-top:2px; }
+.sr-arrow { font-size:14px; color:rgba(122,68,25,.3); }
+
+/* Zodiac preview in modal */
+.zodiac-preview { display:none; background:rgba(255,200,100,.15); border:1px solid rgba(255,180,60,.28); border-radius:14px; padding:12px 16px; margin-bottom:14px; align-items:center; gap:10px; }
+.zodiac-preview.show { display:flex; }
+</style>
+</head>
+<body>
+<div class="phone" id="app">
+
+  <div class="status-bar"><span>09:41</span><span>📶 🔋</span></div>
+
+  <!-- ═══════════════════════════════════════
+       PAGE 1 — ANA SAYFA
+  ═══════════════════════════════════════ -->
+  <div class="page active" id="page-home">
+    <div class="scroll-content">
+      <div class="home-header fi">
+        <div class="sun-deco"></div>
+        <div class="hc">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+              <div class="greeting">Günaydın,</div>
+              <div class="username" id="homeUsername">Zeynep ✨</div>
+              <div class="badges-row">
+                <div class="lvl-badge"><span>🦋</span> Kelebek Seviyesi</div>
+                <div class="zodiac-badge" id="homeZodiacBadge" style="display:none;"></div>
+              </div>
+            </div>
+            <div onclick="goto('page-settings')" style="width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.6);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;font-size:20px;border:1px solid rgba(255,200,100,.4);cursor:pointer;">👤</div>
+          </div>
+          <div class="streak-box">
+            <div class="streak-top">
+              <span class="streak-lbl">🔥 Seri</span>
+              <span class="streak-num">42 gün</span>
+            </div>
+            <div class="days">
+              <div class="dd done">Pt</div><div class="dd done">Sa</div><div class="dd done">Ça</div>
+              <div class="dd done">Pe</div><div class="dd today">Cu</div>
+              <div class="dd pend">Ct</div><div class="dd pend">Pz</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="home-body">
+        <!-- Progress -->
+        <div class="prog-card fi fi1">
+          <div class="prog-inner">
+            <div class="prog-txt">
+              <h3>Bugünkü Yolculuğun</h3>
+              <p id="prog-p">3/7 aktivite tamamlandı</p>
+            </div>
+            <div class="prog-ring">
+              <svg width="72" height="72" viewBox="0 0 72 72">
+                <circle cx="36" cy="36" r="28" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="6"/>
+                <circle id="prog-circle" cx="36" cy="36" r="28" fill="none" stroke="white" stroke-width="6"
+                  stroke-dasharray="175.9" stroke-dashoffset="100" stroke-linecap="round"/>
+              </svg>
+              <div class="prog-num"><span id="prog-n">3/7</span><small>AKTİF</small></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gün Işıkları -->
+        <div class="fi fi2">
+          <div class="sec-title"><div class="sec-dot"></div>Gün Işıklarım</div>
+          <div class="lights-scroll" id="homeLightsScroll"></div>
+        </div>
+
+        <!-- Aktiviteler -->
+        <div class="fi fi3">
+          <div class="sec-title"><div class="sec-dot"></div>Günün Aktiviteleri</div>
+          <div class="act-grid">
+            <div class="act-card g done" onclick="toggleAct(this)"><div class="ci g">🚶</div><div class="an">Sabah Yürüyüşü</div><div class="as">15 dakika</div><div class="dc">✓</div></div>
+            <div class="act-card b done" onclick="toggleAct(this)"><div class="ci b">☎️</div><div class="an">Sevdiklerini Ara</div><div class="as">1 kişi</div><div class="dc">✓</div></div>
+            <div class="act-card y done" onclick="toggleAct(this)"><div class="ci y">☕</div><div class="an">Çay / Kahve Molası</div><div class="as">Keyifle iç</div><div class="dc">✓</div></div>
+            <div class="act-card r" onclick="toggleAct(this)"><div class="ci r">📖</div><div class="an">Kitap Oku</div><div class="as">10 sayfa</div><div class="dc">✓</div></div>
+            <div class="act-card p" onclick="toggleAct(this)"><div class="ci p">🧘</div><div class="an">Nefes Egzersizi</div><div class="as">5 dakika</div><div class="dc">✓</div></div>
+            <div class="act-card o" onclick="toggleAct(this)"><div class="ci o">🌞</div><div class="an">Güneşe Çık</div><div class="as">Balkona uğra</div><div class="dc">✓</div></div>
+            <div class="act-card g" onclick="toggleAct(this)"><div class="ci g">🎵</div><div class="an">Müzik Dinle</div><div class="as">Sevdiğin şarkı</div><div class="dc">✓</div></div>
+          </div>
+        </div>
+
+        <!-- Hızlı Erişim -->
+        <div class="fi fi4">
+          <div class="sec-title"><div class="sec-dot"></div>Hızlı Erişim</div>
+          <div style="display:flex;gap:10px;margin-bottom:22px;">
+            <div class="quick-card" onclick="goto('page-bad')" style="background:linear-gradient(135deg,rgba(168,156,200,.2),rgba(184,200,222,.25));border:1.5px solid rgba(168,156,200,.3);">
+              <div style="font-size:24px;margin-bottom:7px;">🌧️</div>
+              <div style="font-size:12px;font-weight:700;color:#2C2854;">Kötü Günler<br>Modu</div>
+            </div>
+            <div class="quick-card" onclick="goto('page-anon')" style="background:linear-gradient(135deg,rgba(245,200,66,.12),rgba(245,155,58,.1));border:1.5px solid rgba(245,200,66,.28);">
+              <div style="font-size:24px;margin-bottom:7px;">🏮</div>
+              <div style="font-size:12px;font-weight:700;color:#7A3800;">Anonim Işık<br>Gönder</div>
+            </div>
+            <div class="quick-card" onclick="goto('page-insight')" style="background:linear-gradient(135deg,rgba(91,155,213,.12),rgba(255,255,255,.8));border:1.5px solid rgba(91,155,213,.28);">
+              <div style="font-size:24px;margin-bottom:7px;">📊</div>
+              <div style="font-size:12px;font-weight:700;color:#2A4A7A;">Veri &amp;<br>İçgörü</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rozetler -->
+        <div class="fi fi5">
+          <div class="sec-title"><div class="sec-dot"></div>Rozetlerim</div>
+          <div class="badge-scroll">
+            <div class="bc earned"><span>🪶</span>İlk Kanat</div>
+            <div class="bc earned"><span>☁️</span>Bulut Atlayıcı</div>
+            <div class="bc earned"><span>👨‍👩‍👧</span>Aile Meleği</div>
+            <div class="bc locked"><span>💫</span>Işık Hüzmesi</div>
+            <div class="bc locked"><span>🌈</span>Gökkuşağı</div>
+            <div class="bc locked"><span>⭐</span>Yıldız Tozu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="ni-wrap active" onclick="goto('page-home')"><div class="ni">🏠</div><div class="nl">Ana Sayfa</div></div>
+      <div class="ni-wrap" onclick="goto('page-insight')"><div class="ni">📊</div><div class="nl">İçgörü</div></div>
+      <div class="nav-fab" onclick="showToast('➕ Yeni aktivite yakında!')">☀️</div>
+      <div class="ni-wrap" onclick="goto('page-badges')"><div class="ni">🏅</div><div class="nl">Rozetler</div></div>
+      <div class="ni-wrap" onclick="goto('page-settings')"><div class="ni">⚙️</div><div class="nl">Ayarlar</div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       PAGE 2 — ANONİM IŞIK
+  ═══════════════════════════════════════ -->
+  <div class="page" id="page-anon" style="position:relative;">
+    <div class="stars-canvas" id="starsCanvas"></div>
+    <div class="anon-inner">
+      <div class="anon-topbar">
+        <div class="anon-back" onclick="goBack()">←</div>
+        <div class="anon-page-title">Anonim Işık Gönder</div>
+        <div style="width:36px;"></div>
+      </div>
+      <div class="anon-hero">
+        <div class="lantern-wrap"><div class="lantern-glow"></div><span class="lantern">🏮</span></div>
+        <div class="anon-title">Sessizce<br>Işık Ol</div>
+        <div class="anon-sub">Kimin gönderdiği belli olmaz.<br>Sadece <em>"biri bugün seni düşündü"</em><br>mesajı ulaşır.</div>
+      </div>
+      <div class="anon-scroll">
+        <div class="a-sec-lbl">Işık göndereceğin kişi</div>
+        <div class="ppl-list" id="anonPeopleList"></div>
+        <div class="a-sec-lbl">Mesaj seç</div>
+        <div class="composer-box" id="composerBox">
+          <div class="comp-top">
+            <div class="comp-lbl">Hazır mesajlar</div>
+            <div class="presets">
+              <div class="pr on" onclick="selPreset(this,'Bugün seni düşündüm 🌟')">Bugün seni düşündüm</div>
+              <div class="pr" onclick="selPreset(this,'Işığın hep parlasın ✨')">Işığın hep parlasın</div>
+              <div class="pr" onclick="selPreset(this,'Çok değerlisin 💛')">Çok değerlisin</div>
+              <div class="pr" onclick="selPreset(this,'İyi ki varsın 🏮')">İyi ki varsın</div>
+            </div>
+          </div>
+          <div class="comp-body">
+            <div class="anon-note"><span style="font-size:16px;">🔒</span><span class="anon-note-txt">Bu mesaj anonim olarak gönderilecek. Alıcı kim gönderdiğini göremez.</span></div>
+            <div class="msg-prev" id="msgPrev">"Bugün seni düşündüm 🌟"</div>
+          </div>
+        </div>
+        <button class="send-btn-anon" onclick="sendAnon()"><span>🏮</span><span>Işığı Gönder</span></button>
+      </div>
+    </div>
+    <div class="sent-ov" id="sentOv">
+      <span class="sent-lantern">🏮</span>
+      <div class="sent-title">Işığın yola çıktı</div>
+      <div class="sent-sub" id="sentSub">Birisi bugün sıcak bir şey hissedecek.</div>
+      <div class="sent-back" onclick="closeSent()">← Geri dön</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       PAGE 3 — KÖTÜ GÜNLER
+  ═══════════════════════════════════════ -->
+  <div class="page" id="page-bad" style="position:relative;">
+    <div class="rain-wrap" id="rainWrap"></div>
+    <div class="bad-inner">
+      <div class="bad-topbar">
+        <button class="back-btn-bad" onclick="goBack()">←</button>
+        <div style="font-family:'Lora',serif;font-size:16px;color:#2C2854;">Kötü Günler Modu</div>
+        <div style="width:36px;"></div>
+      </div>
+      <div class="bad-scroll">
+        <div class="bad-hero">
+          <div class="cloud-scene">
+            <span class="cloud-sm l">☁️</span><span class="cloud-big">🌧️</span><span class="cloud-sm r">☁️</span>
+          </div>
+          <div class="bad-title">Bugün zor bir gün.</div>
+          <div class="bad-sub">Bu düğmeye basmak cesaret ister. Beklenti yok. Seri korundu. Sadece bir nefes yeter.</div>
+        </div>
+        <div class="b-sec-lbl">Nasıl hissediyorsun?</div>
+        <div class="mood-grid">
+          <div class="mood-btn on" onclick="selMood(this,'tired')"><span class="me">😔</span><span class="ml">Yorgun</span></div>
+          <div class="mood-btn" onclick="selMood(this,'anxious')"><span class="me">😟</span><span class="ml">Endişeli</span></div>
+          <div class="mood-btn" onclick="selMood(this,'empty')"><span class="me">😶</span><span class="ml">Boş</span></div>
+          <div class="mood-btn" onclick="selMood(this,'sad')"><span class="me">😢</span><span class="ml">Üzgün</span></div>
+        </div>
+        <div class="gentle-card">
+          <div class="gc-txt" id="gcTxt">Bugün sadece var olmak yeterli. Aktivite yapmak zorunda değilsin. Seri korunacak. Kendin ol.</div>
+          <div class="gc-sig">— Gün Işığım 🌧️</div>
+        </div>
+        <div class="b-sec-lbl">Küçük adımlar (seçim senin)</div>
+        <div class="mini-grid">
+          <div class="mini-card" onclick="toggleMini(this)"><div class="mi lv">💧</div><div class="mt"><div class="mn">Su iç</div><div class="ms">Bir bardak</div></div><div class="mck">✓</div></div>
+          <div class="mini-card" onclick="toggleMini(this)"><div class="mi sg">🌿</div><div class="mt"><div class="mn">Pencereyi aç</div><div class="ms">Bir dakika</div></div><div class="mck">✓</div></div>
+          <div class="mini-card" onclick="toggleMini(this)"><div class="mi bl">🤲</div><div class="mt"><div class="mn">El yüz yıka</div><div class="ms">Serinle</div></div><div class="mck">✓</div></div>
+          <div class="mini-card" onclick="toggleMini(this)"><div class="mi am">☕</div><div class="mt"><div class="mn">Sıcak bir şey</div><div class="ms">Çay, süt...</div></div><div class="mck">✓</div></div>
+        </div>
+        <div class="protect-card">
+          <div class="prot-icon">🛡️</div>
+          <div class="prot-txt"><h4>42 günlük serin korunuyor</h4><p>Kötü Günler Modu'nda seri kırılmaz.</p></div>
+          <div class="prot-badge">✓ Aktif</div>
+        </div>
+        <button class="breathe-btn" onclick="openBreathe()"><span>🫁</span><span>1 Dakika Nefes Egzersizi</span></button>
+        <button class="emerg-btn" onclick="call112()"><span>🆘</span><span>112'yi Ara — Acil Yardım</span></button>
+      </div>
+    </div>
+    <div class="breathe-ov" id="breatheOv">
+      <div class="b-circle">🫁</div>
+      <div class="b-inst" id="bInst">Yavaşça nefes al...</div>
+      <div class="b-sub">4 sn al · 4 sn tut · 4 sn ver</div>
+      <button class="b-close" onclick="closeBreathe()">Tamam, iyi hissettim ✓</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       PAGE 4 — VERİ & İÇGÖRÜ
+  ═══════════════════════════════════════ -->
+  <div class="page" id="page-insight">
+    <div class="scroll-content">
+      <div class="ph fi">
+        <span class="ph-icon">📊</span>
+        <button class="ph-back" onclick="goBack()">←</button>
+        <div class="ph-title">Veri &amp; İçgörü</div>
+        <div class="ph-sub" id="insightSub">Zeynep · Şubat 2026</div>
+      </div>
+      <div class="insight-body">
+        <!-- Sabah mesajı -->
+        <div class="sec-label fi fi1">☀️ Kişisel Sabah Mesajın</div>
+        <div class="morning-card fi fi1">
+          <div class="mc-top">
+            <div class="mc-icon">🌟</div>
+            <div><div class="mc-label">Claude · Yapay Zeka</div><div class="mc-name">Sana özel, her sabah üretilir</div></div>
+          </div>
+          <div class="mc-msg" id="mcMsg">Yükleniyor...</div>
+          <div class="mc-footer">
+            <div class="mc-date" id="mcDate"></div>
+            <div class="mc-refresh" id="mcRefresh" onclick="generateMorningMessage()"><span id="refreshIcon">✦</span> Yenile</div>
+          </div>
+        </div>
+
+        <!-- Haftalık rapor -->
+        <div class="sec-label fi fi2">📅 Haftalık Işık Raporu</div>
+        <div class="weekly-card fi fi2">
+          <div class="week-nav">
+            <div class="week-nav-btn" onclick="changeWeek(-1)">‹</div>
+            <div class="week-range" id="weekRange">17–23 Şubat 2026</div>
+            <div class="week-nav-btn" onclick="changeWeek(1)">›</div>
+          </div>
+          <div class="narrative" id="weekNarrative"></div>
+          <div class="day-bars" id="dayBars"></div>
+          <div class="week-stats" id="weekStats"></div>
+        </div>
+
+        <!-- Korelasyon -->
+        <div class="sec-label fi fi3">🔗 Alışkanlık İçgörüleri</div>
+        <div class="corr-card fi fi3">
+          <div class="corr-title">Senin için ne işe yarıyor?</div>
+          <div class="ins-row"><div class="ins-ic green">🫁</div><div class="ins-t"><div class="ins-h">Nefes egzersizinin ertesi günü</div><div class="ins-b">Nefes yaptıktan sonraki gün aktivite oranın %40 artıyor.</div></div><div class="ins-badge pos">+40%</div></div>
+          <div class="ins-row"><div class="ins-ic orange">☕</div><div class="ins-t"><div class="ins-h">Kahve molası bağlantı kuruyor</div><div class="ins-b">Kahve günlerinin %78'inde sevdiklerini de arıyorsun.</div></div><div class="ins-badge pos">%78</div></div>
+          <div class="ins-row"><div class="ins-ic rose">🌧️</div><div class="ins-t"><div class="ins-h">Kötü Günler Modundan sonra</div><div class="ins-b">Modu açtıktan sonraki 2 günde seri kırılma ihtimalin %60 düşüyor.</div></div><div class="ins-badge pos">−60%</div></div>
+          <div class="ins-row"><div class="ins-ic blue">📅</div><div class="ins-t"><div class="ins-h">Pazartesi sendromu gerçek</div><div class="ins-b">Pazartesi tamamlama oranın hafta ortasına göre %22 düşük.</div></div><div class="ins-badge neg">−22%</div></div>
+        </div>
+
+        <!-- Isı haritası -->
+        <div class="sec-label fi fi4">🗓️ 2026 Işık Yolculuğun</div>
+        <div class="heatmap-card fi fi4">
+          <div class="hm-title">Yıllık Aktivite Haritası</div>
+          <div class="hm-sub">Her kare bir gün · Koyu = çok aktif</div>
+          <div class="hm-months" id="heatmapWrap"></div>
+          <div class="hm-legend">
+            <span class="hm-legend-lbl">Az</span>
+            <div class="hm-legend-box" style="background:rgba(255,200,100,.12)"></div>
+            <div class="hm-legend-box" style="background:rgba(255,180,70,.55)"></div>
+            <div class="hm-legend-box" style="background:#FF8C42"></div>
+            <div class="hm-legend-box" style="background:#E85000"></div>
+            <span class="hm-legend-lbl">Çok</span>
+          </div>
+        </div>
+
+        <!-- Zirveler -->
+        <div class="sec-label fi fi5">🏆 Zirveler</div>
+        <div class="best-day-card fi fi5">
+          <div class="bd-lbl">Bu yılki en iyi anların</div>
+          <div class="bd-grid">
+            <div class="bd-item"><div class="bd-num">42</div><div class="bd-desc">🔥 En uzun seri</div></div>
+            <div class="bd-item"><div class="bd-num">187</div><div class="bd-desc">⭐ Toplam aktivite</div></div>
+            <div class="bd-item"><div class="bd-num">94%</div><div class="bd-desc">📈 Tamamlama oranı</div></div>
+            <div class="bd-item"><div class="bd-num">23</div><div class="bd-desc">🏮 Işık gönderildi</div></div>
+          </div>
+        </div>
+
+        <!-- Aylık karşılaştırma -->
+        <div class="sec-label fi fi6">📊 Aylık Karşılaştırma</div>
+        <div class="month-card fi fi6">
+          <div class="month-title">Son 6 Ay — Aktif Gün</div>
+          <div class="st-bars" id="monthBars"></div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="ni-wrap" onclick="goto('page-home')"><div class="ni">🏠</div><div class="nl">Ana Sayfa</div></div>
+      <div class="ni-wrap active"><div class="ni">📊</div><div class="nl">İçgörü</div></div>
+      <div class="nav-fab">☀️</div>
+      <div class="ni-wrap" onclick="goto('page-badges')"><div class="ni">🏅</div><div class="nl">Rozetler</div></div>
+      <div class="ni-wrap" onclick="goto('page-settings')"><div class="ni">⚙️</div><div class="nl">Ayarlar</div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       PAGE 5 — İSTATİSTİK
+  ═══════════════════════════════════════ -->
+  <div class="page" id="page-stats">
+    <div class="scroll-content">
+      <div class="ph fi">
+        <span class="ph-icon">📈</span>
+        <button class="ph-back" onclick="goBack()">←</button>
+        <div class="ph-title">İstatistiklerim</div>
+        <div class="ph-sub">Şubat 2026 · Zeynep'in Yolculuğu</div>
+      </div>
+      <div class="stats-body">
+        <div class="stats-big fi fi1">
+          <div class="s-big-card"><div class="s-big-num">42</div><div class="s-big-lbl">🔥 GÜN SERİSİ</div></div>
+          <div class="s-big-card"><div class="s-big-num">187</div><div class="s-big-lbl">⭐ TOPLAM AKTİVİTE</div></div>
+          <div class="s-big-card"><div class="s-big-num">94%</div><div class="s-big-lbl">📈 TAMAMLAMA ORANI</div></div>
+          <div class="s-big-card"><div class="s-big-num">23</div><div class="s-big-lbl">🏮 IŞIK GÖNDERİLDİ</div></div>
+        </div>
+        <div class="chart-card fi fi2">
+          <div class="ch-title">📅 Bu Hafta</div>
+          <div class="ch-bars" id="weekBars"></div>
+        </div>
+        <div class="chart-card fi fi3">
+          <div class="ch-title">🏆 En Çok Yapılanlar</div>
+          <div class="ab-row"><div class="ab-icon">☕</div><div class="ab-info"><div class="ab-name">Çay / Kahve Molası</div><div class="ab-bar-wrap"><div class="ab-bar" style="width:92%"></div></div></div><div class="ab-count">38</div></div>
+          <div class="ab-row"><div class="ab-icon">☎️</div><div class="ab-info"><div class="ab-name">Sevdiklerini Ara</div><div class="ab-bar-wrap"><div class="ab-bar" style="width:78%"></div></div></div><div class="ab-count">32</div></div>
+          <div class="ab-row"><div class="ab-icon">🚶</div><div class="ab-info"><div class="ab-name">Sabah Yürüyüşü</div><div class="ab-bar-wrap"><div class="ab-bar" style="width:65%"></div></div></div><div class="ab-count">27</div></div>
+          <div class="ab-row"><div class="ab-icon">🎵</div><div class="ab-info"><div class="ab-name">Müzik Dinle</div><div class="ab-bar-wrap"><div class="ab-bar" style="width:55%"></div></div></div><div class="ab-count">23</div></div>
+        </div>
+        <div class="annual-card fi fi4">
+          <div class="ac-title">✨ 2026 Işık Yolculuğun</div>
+          <div class="ac-grid">
+            <div class="ac-item"><div class="ac-num">56</div><div class="ac-lbl">AKTİF GÜN</div></div>
+            <div class="ac-item"><div class="ac-num">23</div><div class="ac-lbl">IŞIK GÖNDERDİN</div></div>
+            <div class="ac-item"><div class="ac-num">3</div><div class="ac-lbl">ROZET KAZANDIN</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="ni-wrap" onclick="goto('page-home')"><div class="ni">🏠</div><div class="nl">Ana Sayfa</div></div>
+      <div class="ni-wrap" onclick="goto('page-insight')"><div class="ni">📊</div><div class="nl">İçgörü</div></div>
+      <div class="nav-fab">☀️</div>
+      <div class="ni-wrap active"><div class="ni">📈</div><div class="nl">İstatistik</div></div>
+      <div class="ni-wrap" onclick="goto('page-settings')"><div class="ni">⚙️</div><div class="nl">Ayarlar</div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       PAGE 6 — ROZETLER
+  ═══════════════════════════════════════ -->
+  <div class="page" id="page-badges">
+    <div class="scroll-content">
+      <div class="ph fi">
+        <span class="ph-icon">🏅</span>
+        <button class="ph-back" onclick="goBack()">←</button>
+        <div class="ph-title">Rozetlerim</div>
+        <div class="ph-sub">3/6 rozet kazanıldı</div>
+      </div>
+      <div class="badges-body">
+        <div class="bp-card fi fi1">
+          <div class="bp-top"><span class="bp-lbl">Toplam ilerleme</span><span class="bp-count">3/6</span></div>
+          <div class="bp-bar"><div class="bp-fill"></div></div>
+        </div>
+        <div class="badges-grid fi fi2">
+          <div class="badge-card earned"><span class="badge-emoji">🪶</span><div class="badge-name">İlk Kanat</div><div class="badge-desc">7 gün ardışık aktif ol</div><div class="badge-tag earned">✓ Kazanıldı</div></div>
+          <div class="badge-card earned"><span class="badge-emoji">☁️</span><div class="badge-name">Bulut Atlayıcı</div><div class="badge-desc">30 gün ardışık aktif ol</div><div class="badge-tag earned">✓ Kazanıldı</div></div>
+          <div class="badge-card earned"><span class="badge-emoji">👨‍👩‍👧</span><div class="badge-name">Aile Meleği</div><div class="badge-desc">Aile halkasındaki herkes 7 gün aktif</div><div class="badge-tag earned">✓ Kazanıldı</div></div>
+          <div class="badge-card locked"><span class="badge-emoji">💫</span><div class="badge-name">Işık Hüzmesi</div><div class="badge-desc">100 aktivite tamamla</div><div class="badge-tag locked">🔒 Devam et</div></div>
+          <div class="badge-card locked"><span class="badge-emoji">🌈</span><div class="badge-name">Gökkuşağı</div><div class="badge-desc">Tüm aktivite türlerini dene</div><div class="badge-tag locked">🔒 5/6 tür</div></div>
+          <div class="badge-card locked"><span class="badge-emoji">⭐</span><div class="badge-name">Yıldız Tozu</div><div class="badge-desc">1 yıl boyunca düzenli kullan</div><div class="badge-tag locked">🔒 56/365 gün</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="ni-wrap" onclick="goto('page-home')"><div class="ni">🏠</div><div class="nl">Ana Sayfa</div></div>
+      <div class="ni-wrap" onclick="goto('page-insight')"><div class="ni">📊</div><div class="nl">İçgörü</div></div>
+      <div class="nav-fab">☀️</div>
+      <div class="ni-wrap active"><div class="ni">🏅</div><div class="nl">Rozetler</div></div>
+      <div class="ni-wrap" onclick="goto('page-settings')"><div class="ni">⚙️</div><div class="nl">Ayarlar</div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       PAGE 7 — AYARLAR / PROFİL
+  ═══════════════════════════════════════ -->
+  <div class="page" id="page-settings">
+    <div class="scroll-content">
+      <div class="ph fi">
+        <span class="ph-icon">⚙️</span>
+        <button class="ph-back" onclick="goBack()">←</button>
+        <div class="ph-title">Profil &amp; Ayarlar</div>
+        <div class="ph-sub">Hesabını yönet</div>
+      </div>
+      <div class="profile-avatar-wrap fi fi1">
+        <div class="profile-avatar-big" onclick="openProfileEdit()" id="profileAvatarBig">
+          <span id="profileAvatarEmoji">🌟</span>
+          <div class="av-edit">✏️</div>
+        </div>
+        <div class="profile-name-big" id="profileNameDisplay">Zeynep Kaya</div>
+        <div class="profile-zodiac-big" id="profileZodiacDisplay" style="display:none;">
+          <span id="profileZodiacEmoji"></span><span id="profileZodiacText"></span>
+        </div>
+      </div>
+      <div class="settings-body">
+        <div class="settings-section fi fi2">
+          <div class="settings-section-title">Profil Bilgileri</div>
+          <div class="settings-row" onclick="openProfileEdit()"><div class="sr-icon orange">👤</div><div class="sr-txt"><div class="sr-label">Ad Soyad</div><div class="sr-value" id="srNameVal">Zeynep Kaya</div></div><div class="sr-arrow">›</div></div>
+          <div class="settings-row" onclick="openProfileEdit()"><div class="sr-icon rose">🎂</div><div class="sr-txt"><div class="sr-label">Doğum Tarihi</div><div class="sr-value" id="srBirthVal">Girilmedi</div></div><div class="sr-arrow">›</div></div>
+          <div class="settings-row" onclick="openProfileEdit()"><div class="sr-icon purple">✨</div><div class="sr-txt"><div class="sr-label">Burç</div><div class="sr-value" id="srZodiacVal">Doğum tarihi girilince belirlenir</div></div><div class="sr-arrow">›</div></div>
+        </div>
+        <div class="settings-section fi fi3">
+          <div class="settings-section-title">Gün Işıklarım</div>
+          <div id="lightsSettingsList"></div>
+          <div class="settings-row" onclick="openAddPerson()"><div class="sr-icon green">➕</div><div class="sr-txt"><div class="sr-label" style="color:#4CAF7D;">Yeni Kişi Ekle</div><div class="sr-value">Gün ışığın ağını genişlet</div></div><div class="sr-arrow" style="color:#4CAF7D;">›</div></div>
+        </div>
+        <div class="settings-section fi fi4">
+          <div class="settings-section-title">Uygulama</div>
+          <div class="settings-row" onclick="showToast('🔔 Bildirim ayarları yakında!')"><div class="sr-icon blue">🔔</div><div class="sr-txt"><div class="sr-label">Bildirimler</div><div class="sr-value">Açık · Her gün 09:00</div></div><div class="sr-arrow">›</div></div>
+          <div class="settings-row" onclick="showToast('🌙 Karanlık mod yakında!')"><div class="sr-icon purple">🌙</div><div class="sr-txt"><div class="sr-label">Karanlık Mod</div><div class="sr-value">Kapalı</div></div><div class="sr-arrow">›</div></div>
+          <div class="settings-row" onclick="goto('page-stats')"><div class="sr-icon orange">📈</div><div class="sr-txt"><div class="sr-label">İstatistiklerim</div><div class="sr-value">Tüm verilerini gör</div></div><div class="sr-arrow">›</div></div>
+        </div>
+        <div class="settings-section fi fi5">
+          <div class="settings-section-title">Gizlilik &amp; Güvenlik</div>
+          <div class="settings-row" onclick="showToast('🔒 Gizlilik ayarları yakında!')"><div class="sr-icon green">🔒</div><div class="sr-txt"><div class="sr-label">Gizlilik</div><div class="sr-value">Verilerini yönet</div></div><div class="sr-arrow">›</div></div>
+          <div class="settings-row" onclick="call112()"><div class="sr-icon rose">🆘</div><div class="sr-txt"><div class="sr-label" style="color:#E8748A;">Acil Durum — 112'yi Ara</div><div class="sr-value">Doğrudan telefon araması başlatır</div></div><div class="sr-arrow" style="color:#E8748A;">›</div></div>
+        </div>
+        <div style="text-align:center;padding:16px 0 24px;"><div style="font-size:12px;color:rgba(122,68,25,.35);font-weight:600;">Gün Işığım v1.0.0 · Made with ☀️</div></div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="ni-wrap" onclick="goto('page-home')"><div class="ni">🏠</div><div class="nl">Ana Sayfa</div></div>
+      <div class="ni-wrap" onclick="goto('page-insight')"><div class="ni">📊</div><div class="nl">İçgörü</div></div>
+      <div class="nav-fab">☀️</div>
+      <div class="ni-wrap" onclick="goto('page-badges')"><div class="ni">🏅</div><div class="nl">Rozetler</div></div>
+      <div class="ni-wrap active"><div class="ni">⚙️</div><div class="nl">Ayarlar</div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       MODALS
+  ═══════════════════════════════════════ -->
+  <!-- Profil Düzenle -->
+  <div class="modal-overlay" id="profileModal" onclick="if(event.target===this)closeProfileEdit()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Profilini Düzenle</div>
+      <div class="form-group">
+        <label class="form-label">Avatar Seç</label>
+        <div class="avatar-picker">
+          <div class="avatar-opt sel" onclick="selAvatar(this,'🌟')">🌟</div>
+          <div class="avatar-opt" onclick="selAvatar(this,'☀️')">☀️</div>
+          <div class="avatar-opt" onclick="selAvatar(this,'🌸')">🌸</div>
+          <div class="avatar-opt" onclick="selAvatar(this,'🦋')">🦋</div>
+          <div class="avatar-opt" onclick="selAvatar(this,'🌻')">🌻</div>
+          <div class="avatar-opt" onclick="selAvatar(this,'🌈')">🌈</div>
+          <div class="avatar-opt" onclick="selAvatar(this,'🐦')">🐦</div>
+          <div class="avatar-opt" onclick="selAvatar(this,'🌙')">🌙</div>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Ad</label><input class="form-input" id="inputFirstName" type="text" placeholder="Adın" value="Zeynep"></div>
+      <div class="form-group"><label class="form-label">Soyad</label><input class="form-input" id="inputLastName" type="text" placeholder="Soyadın" value="Kaya"></div>
+      <div class="form-group"><label class="form-label">Doğum Tarihi</label><input class="form-input" id="inputBirthdate" type="date" style="color:#2D1B00;" oninput="onBirthdateChange()"></div>
+      <div class="zodiac-preview" id="zodiacPreview">
+        <span id="zodiacPrevEmoji" style="font-size:24px;"></span>
+        <div><div style="font-size:13px;font-weight:700;color:#2D1B00;" id="zodiacPrevName"></div><div style="font-size:11px;color:rgba(122,68,25,.55);" id="zodiacPrevDates"></div></div>
+      </div>
+      <button class="save-btn" onclick="saveProfile()">💾 Kaydet</button>
+    </div>
+  </div>
+
+  <!-- Kişi Ekle -->
+  <div class="modal-overlay" id="addPersonModal" onclick="if(event.target===this)closeAddPerson()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Yeni Gün Işığı Ekle ✨</div>
+      <div class="form-group">
+        <label class="form-label">Avatar Seç</label>
+        <div class="emoji-grid">
+          <div class="emoji-opt sel" onclick="selPersonEmoji(this,'👩')">👩</div>
+          <div class="emoji-opt" onclick="selPersonEmoji(this,'👨')">👨</div>
+          <div class="emoji-opt" onclick="selPersonEmoji(this,'👵')">👵</div>
+          <div class="emoji-opt" onclick="selPersonEmoji(this,'👴')">👴</div>
+          <div class="emoji-opt" onclick="selPersonEmoji(this,'👧')">👧</div>
+          <div class="emoji-opt" onclick="selPersonEmoji(this,'👦')">👦</div>
+          <div class="emoji-opt" onclick="selPersonEmoji(this,'👩‍🦱')">👩‍🦱</div>
+          <div class="emoji-opt" onclick="selPersonEmoji(this,'👨‍🦳')">👨‍🦳</div>
+          <div class="emoji-opt" onclick="selPersonEmoji(this,'🧑')">🧑</div>
+          <div class="emoji-opt" onclick="selPersonEmoji(this,'🐶')">🐶</div>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">İsim</label><input class="form-input" id="newPersonName" type="text" placeholder="Kişinin adı (ör: Annem, Ayşe...)"></div>
+      <div class="form-group">
+        <label class="form-label">İlişki</label>
+        <select class="form-input" id="newPersonRel" style="appearance:none;cursor:pointer;">
+          <option>👨‍👩‍👧 Aile</option><option>👫 Arkadaş</option><option>💑 Sevgili</option><option>🏠 Komşu</option><option>💼 İş Arkadaşı</option><option>✨ Diğer</option>
+        </select>
+      </div>
+      <button class="save-btn" onclick="addNewPerson()" style="background:linear-gradient(135deg,#4CAF7D,#2E8B57);">✨ Gün Işığına Ekle</button>
+    </div>
+  </div>
+
+</div><!-- /phone -->
+
+<div class="toast" id="toast"></div>
+<div class="hm-tooltip" id="hmTooltip"></div>
+
+<script>
+/* ═══════════════════════════════════════
+   BURÇ VERİSİ
+═══════════════════════════════════════ */
+const ZODIACS = [
+  { name:'Oğlak', emoji:'♑', dates:'22 Ara–19 Oca', check:(m,d)=>m===12&&d>=22||m===1&&d<=19 },
+  { name:'Kova',  emoji:'♒', dates:'20 Oca–18 Şub', check:(m,d)=>m===1&&d>=20||m===2&&d<=18 },
+  { name:'Balık', emoji:'♓', dates:'19 Şub–20 Mar', check:(m,d)=>m===2&&d>=19||m===3&&d<=20 },
+  { name:'Koç',   emoji:'♈', dates:'21 Mar–19 Nis', check:(m,d)=>m===3&&d>=21||m===4&&d<=19 },
+  { name:'Boğa',  emoji:'♉', dates:'20 Nis–20 May', check:(m,d)=>m===4&&d>=20||m===5&&d<=20 },
+  { name:'İkizler',emoji:'♊',dates:'21 May–20 Haz', check:(m,d)=>m===5&&d>=21||m===6&&d<=20 },
+  { name:'Yengeç',emoji:'♋',dates:'21 Haz–22 Tem', check:(m,d)=>m===6&&d>=21||m===7&&d<=22 },
+  { name:'Aslan', emoji:'♌', dates:'23 Tem–22 Ağu', check:(m,d)=>m===7&&d>=23||m===8&&d<=22 },
+  { name:'Başak', emoji:'♍', dates:'23 Ağu–22 Eyl', check:(m,d)=>m===8&&d>=23||m===9&&d<=22 },
+  { name:'Terazi',emoji:'♎', dates:'23 Eyl–22 Eki', check:(m,d)=>m===9&&d>=23||m===10&&d<=22 },
+  { name:'Akrep', emoji:'♏', dates:'23 Eki–21 Kas', check:(m,d)=>m===10&&d>=23||m===11&&d<=21 },
+  { name:'Yay',   emoji:'♐', dates:'22 Kas–21 Ara', check:(m,d)=>m===11&&d>=22||m===12&&d<=21 },
+];
+function getZodiac(str) {
+  if (!str) return null;
+  const d = new Date(str), m = d.getMonth()+1, day = d.getDate();
+  return ZODIACS.find(z=>z.check(m,day)) || null;
+}
+
+/* ═══════════════════════════════════════
+   UYGULAMA DURUMU
+═══════════════════════════════════════ */
+let profile = { firstName:'Zeynep', lastName:'Kaya', avatar:'🌟', birthdate:'', zodiac:null };
+let selectedAvatar = '🌟';
+let selectedPersonEmoji = '👩';
+
+let people = [
+  { name:'Anne',      emoji:'👩',   active:true  },
+  { name:'Baba',      emoji:'👨',   active:true  },
+  { name:'Büyükanne', emoji:'👵',   active:false },
+  { name:'Elif',      emoji:'👩‍🦱', active:true  },
+  { name:'Mehmet',    emoji:'👨‍🦳', active:false },
+];
+
+const USER = { name:'Zeynep', streak:42, totalActivities:187, completionRate:94, lightsSent:23, bestDay:'Perşembe', worstDay:'Pazartesi' };
+
+/* ═══════════════════════════════════════
+   NAVİGASYON
+═══════════════════════════════════════ */
+let navHistory = ['page-home'];
+
+function goto(id) {
+  const cur = document.querySelector('.page.active');
+  if (cur && cur.id === id) return;
+  cur && cur.classList.remove('active','back');
+  const next = document.getElementById(id);
+  next.classList.remove('back');
+  next.classList.add('active');
+  navHistory.push(id);
+  if (id==='page-anon') { initStars(); renderAnonPeople(); }
+  if (id==='page-bad') initRain();
+  if (id==='page-stats') initWeekChart();
+  if (id==='page-insight') initInsightPage();
+  if (id==='page-settings') renderSettingsPeople();
+}
+
+function goBack() {
+  if (navHistory.length<=1) return;
+  navHistory.pop();
+  const prev = navHistory[navHistory.length-1];
+  const cur = document.querySelector('.page.active');
+  cur && cur.classList.remove('active');
+  const prevEl = document.getElementById(prev);
+  prevEl.classList.add('active','back');
+  setTimeout(()=>prevEl.classList.remove('back'),400);
+}
+
+/* ═══════════════════════════════════════
+   ANA SAYFA
+═══════════════════════════════════════ */
+function renderHomePeople() {
+  const scroll = document.getElementById('homeLightsScroll');
+  scroll.innerHTML = '';
+  people.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'lp';
+    div.onclick = () => { goto('page-anon'); setTimeout(()=>preselectPerson(p.name),250); };
+    div.innerHTML = `<div class="av-ring ${p.active?'on':'off'}"><div class="av-inner">${p.emoji}</div></div><div class="pname">${p.name}</div><div class="pstatus ${p.active?'':'away'}">${p.active?'● Aktif':'○ Sessiz'}</div>`;
+    scroll.appendChild(div);
+  });
+  const addDiv = document.createElement('div');
+  addDiv.className = 'lp';
+  addDiv.onclick = openAddPerson;
+  addDiv.innerHTML = `<div class="add-circle">+</div><div class="pname" style="color:#FF8C42;">Ekle</div>`;
+  scroll.appendChild(addDiv);
+}
+
+let doneCount = 3;
+const totalActs = 7;
+
+function toggleAct(card) {
+  const wasDone = card.classList.contains('done');
+  if (!wasDone) { card.classList.add('done'); doneCount++; spawnParticles(card); showToast('✨ Harika! Bir adım daha ilerledin!'); }
+  else { card.classList.remove('done'); doneCount = Math.max(0,doneCount-1); showToast('Aktivite geri alındı'); }
+  updateProg();
+}
+
+function updateProg() {
+  const offset = 175.9*(1-doneCount/totalActs);
+  document.getElementById('prog-circle').setAttribute('stroke-dashoffset',offset);
+  document.getElementById('prog-p').textContent = `${doneCount}/${totalActs} aktivite tamamlandı`;
+  document.getElementById('prog-n').textContent = `${doneCount}/${totalActs}`;
+  if (doneCount===totalActs) { setTimeout(()=>showToast('🌟 Tüm aktiviteleri tamamladın!'),500); for(let i=0;i<18;i++) setTimeout(()=>spawnRandParticle(),i*70); }
+}
+
+/* ═══════════════════════════════════════
+   TOAST & PARTİKEL
+═══════════════════════════════════════ */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(window._tt);
+  window._tt = setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+function spawnParticles(card) {
+  const rect = card.getBoundingClientRect();
+  const colors = ['#FF8C42','#FFD166','#4CAF7D','#E8748A','#9B7FD4'];
+  for(let i=0;i<7;i++) {
+    const p=document.createElement('div'); p.className='particle';
+    p.style.cssText=`left:${rect.left+rect.width/2+(Math.random()-.5)*40}px;top:${rect.top+10}px;background:${colors[Math.floor(Math.random()*colors.length)]};--dx:${(Math.random()-.5)*80}px;animation-delay:${Math.random()*.3}s;`;
+    document.body.appendChild(p); setTimeout(()=>p.remove(),1200);
+  }
+}
+function spawnRandParticle() {
+  const colors=['#FF8C42','#FFD166','#4CAF7D','#E8748A'];
+  const p=document.createElement('div'); p.className='particle';
+  p.style.cssText=`left:${100+Math.random()*190}px;top:${Math.random()*400}px;background:${colors[Math.floor(Math.random()*colors.length)]};--dx:${(Math.random()-.5)*100}px;`;
+  document.body.appendChild(p); setTimeout(()=>p.remove(),1200);
+}
+
+/* ═══════════════════════════════════════
+   PROFİL
+═══════════════════════════════════════ */
+function openProfileEdit() {
+  document.getElementById('inputFirstName').value = profile.firstName;
+  document.getElementById('inputLastName').value = profile.lastName;
+  document.getElementById('inputBirthdate').value = profile.birthdate;
+  document.querySelectorAll('#profileModal .avatar-opt').forEach(o=>o.classList.toggle('sel',o.textContent===profile.avatar));
+  selectedAvatar = profile.avatar;
+  if (profile.birthdate) onBirthdateChange();
+  document.getElementById('profileModal').classList.add('show');
+}
+function closeProfileEdit() { document.getElementById('profileModal').classList.remove('show'); }
+
+function selAvatar(opt,emoji) {
+  document.querySelectorAll('#profileModal .avatar-opt').forEach(o=>o.classList.remove('sel'));
+  opt.classList.add('sel'); selectedAvatar = emoji;
+}
+
+function onBirthdateChange() {
+  const val = document.getElementById('inputBirthdate').value;
+  const z = getZodiac(val);
+  const prev = document.getElementById('zodiacPreview');
+  if (z && val) {
+    prev.classList.add('show');
+    document.getElementById('zodiacPrevEmoji').textContent = z.emoji;
+    document.getElementById('zodiacPrevName').textContent = z.name;
+    document.getElementById('zodiacPrevDates').textContent = z.dates;
+  } else { prev.classList.remove('show'); }
+}
+
+function saveProfile() {
+  const fn = document.getElementById('inputFirstName').value.trim();
+  const ln = document.getElementById('inputLastName').value.trim();
+  if (!fn) { showToast('⚠️ Ad alanı boş olamaz!'); return; }
+  profile.firstName=fn; profile.lastName=ln;
+  profile.avatar=selectedAvatar;
+  profile.birthdate=document.getElementById('inputBirthdate').value;
+  profile.zodiac=getZodiac(profile.birthdate);
+  USER.name = fn;
+  applyProfileToUI();
+  closeProfileEdit();
+  showToast('✅ Profil kaydedildi!');
+}
+
+function applyProfileToUI() {
+  const full = profile.firstName+(profile.lastName?' '+profile.lastName:'');
+  document.getElementById('homeUsername').textContent = profile.firstName+' ✨';
+  const hzb = document.getElementById('homeZodiacBadge');
+  if (profile.zodiac) { hzb.style.display='inline-flex'; hzb.textContent=profile.zodiac.emoji+' '+profile.zodiac.name; }
+  else { hzb.style.display='none'; }
+  document.getElementById('profileNameDisplay').textContent = full;
+  document.getElementById('profileAvatarEmoji').textContent = profile.avatar;
+  document.getElementById('srNameVal').textContent = full;
+  if (profile.birthdate) {
+    const d=new Date(profile.birthdate);
+    document.getElementById('srBirthVal').textContent = d.toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});
+  } else { document.getElementById('srBirthVal').textContent='Girilmedi'; }
+  if (profile.zodiac) {
+    document.getElementById('srZodiacVal').textContent=profile.zodiac.emoji+' '+profile.zodiac.name+' · '+profile.zodiac.dates;
+    document.getElementById('profileZodiacDisplay').style.display='inline-flex';
+    document.getElementById('profileZodiacEmoji').textContent=profile.zodiac.emoji;
+    document.getElementById('profileZodiacText').textContent=profile.zodiac.name;
+  } else {
+    document.getElementById('srZodiacVal').textContent='Doğum tarihi girilince belirlenir';
+    document.getElementById('profileZodiacDisplay').style.display='none';
+  }
+}
+
+/* ═══════════════════════════════════════
+   KİŞİ EKLE / ÇIKAR
+═══════════════════════════════════════ */
+function openAddPerson() {
+  document.getElementById('newPersonName').value='';
+  selectedPersonEmoji='👩';
+  document.querySelectorAll('.emoji-opt').forEach(o=>o.classList.toggle('sel',o.textContent==='👩'));
+  document.getElementById('addPersonModal').classList.add('show');
+}
+function closeAddPerson() { document.getElementById('addPersonModal').classList.remove('show'); }
+
+function selPersonEmoji(opt,emoji) {
+  document.querySelectorAll('.emoji-opt').forEach(o=>o.classList.remove('sel'));
+  opt.classList.add('sel'); selectedPersonEmoji=emoji;
+}
+
+function addNewPerson() {
+  const name = document.getElementById('newPersonName').value.trim();
+  if (!name) { showToast('⚠️ İsim boş olamaz!'); return; }
+  people.push({ name, emoji:selectedPersonEmoji, active:true });
+  closeAddPerson();
+  renderHomePeople(); renderAnonPeople(); renderSettingsPeople();
+  showToast(`🌟 ${name} Gün Işıklarına eklendi!`);
+}
+
+function removePerson(i) {
+  const name = people[i].name;
+  people.splice(i,1);
+  renderHomePeople(); renderAnonPeople(); renderSettingsPeople();
+  showToast(`${name} listeden çıkarıldı`);
+}
+
+function renderSettingsPeople() {
+  const list = document.getElementById('lightsSettingsList');
+  if (!list) return;
+  list.innerHTML='';
+  people.forEach((p,i)=>{
+    const div=document.createElement('div');
+    div.className='settings-row'; div.style.cursor='default';
+    div.innerHTML=`<div class="sr-icon orange" style="font-size:22px;">${p.emoji}</div><div class="sr-txt"><div class="sr-label">${p.name}</div><div class="sr-value">${p.active?'● Aktif':'○ Sessiz'}</div></div><div onclick="removePerson(${i})" style="width:28px;height:28px;border-radius:50%;background:rgba(232,116,138,.12);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;color:#E8748A;border:1px solid rgba(232,116,138,.2);">✕</div>`;
+    list.appendChild(div);
+  });
+}
+
+/* ═══════════════════════════════════════
+   ANONİM IŞIK
+═══════════════════════════════════════ */
+let starsInited = false;
+function initStars() {
+  if (starsInited) return; starsInited=true;
+  const c=document.getElementById('starsCanvas');
+  for(let i=0;i<70;i++){
+    const s=document.createElement('div'); s.className='star';
+    const sz=Math.random()*2.2+.5;
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--dly:${Math.random()*4}s;`;
+    c.appendChild(s);
+  }
+}
+
+function renderAnonPeople() {
+  const list=document.getElementById('anonPeopleList');
+  if (!list) return;
+  list.innerHTML='';
+  const hints={'Anne':'Son 2 gündür aktif değil 🌙','Baba':'Bugün aktif ☀️','Büyükanne':'Uzun süredir sessiz 🌫️'};
+  people.forEach(p=>{
+    const div=document.createElement('div');
+    div.className='p-row';
+    div.onclick=()=>selPerson(div,p.name);
+    div.innerHTML=`<div class="p-av">${p.emoji}</div><div class="p-info"><div class="p-nm">${p.name}</div><div class="p-ht">${hints[p.name]||(p.active?'Bugün aktif ☀️':'Sessiz 🌙')}</div></div><div class="p-sel">✓</div>`;
+    list.appendChild(div);
+  });
+}
+
+function preselectPerson(name) {
+  document.querySelectorAll('.p-row').forEach(r=>{
+    if(r.querySelector('.p-nm')?.textContent===name) {
+      r.classList.add('sel');
+      document.getElementById('composerBox').classList.add('active');
+    }
+  });
+}
+
+let selPersonName=null, selMsg='Bugün seni düşündüm 🌟';
+
+function selPerson(row,name) {
+  document.querySelectorAll('.p-row').forEach(r=>r.classList.remove('sel'));
+  row.classList.add('sel'); selPersonName=name;
+  document.getElementById('composerBox').classList.add('active');
+}
+
+function selPreset(btn,msg) {
+  document.querySelectorAll('.pr').forEach(p=>p.classList.remove('on'));
+  btn.classList.add('on'); selMsg=msg;
+  document.getElementById('msgPrev').textContent=`"${msg}"`;
+}
+
+function sendAnon() {
+  if (!selPersonName) { showToast('⚠️ Önce bir kişi seç!'); return; }
+  for(let i=0;i<10;i++){
+    const p=document.createElement('div'); p.className='lp-float';
+    p.textContent=['🏮','✨','💛','🌟'][Math.floor(Math.random()*4)];
+    p.style.cssText=`left:${80+Math.random()*220}px;top:${300+Math.random()*200}px;--dx:${(Math.random()-.5)*180}px;animation-delay:${Math.random()*.4}s;`;
+    document.body.appendChild(p); setTimeout(()=>p.remove(),3000);
+  }
+  document.getElementById('sentSub').textContent=`${selPersonName} bugün birinin onu düşündüğünü hissedecek. Kimden geldiğini bilemeyecek. Sadece sıcak bir ışık.`;
+  setTimeout(()=>document.getElementById('sentOv').classList.add('show'),350);
+}
+
+function closeSent() {
+  document.getElementById('sentOv').classList.remove('show');
+  document.querySelectorAll('.p-row').forEach(r=>r.classList.remove('sel'));
+  selPersonName=null;
+}
+
+/* ═══════════════════════════════════════
+   KÖTÜ GÜNLER
+═══════════════════════════════════════ */
+let rainInited=false;
+function initRain() {
+  if (rainInited) return; rainInited=true;
+  const rw=document.getElementById('rainWrap');
+  for(let i=0;i<45;i++){
+    const d=document.createElement('div'); d.className='rd';
+    d.style.cssText=`left:${Math.random()*100}%;height:${14+Math.random()*28}px;--d:${.5+Math.random()*.8}s;--dly:${-Math.random()*2}s;`;
+    rw.appendChild(d);
+  }
+}
+
+const moodMsgs={
+  tired:'Yorgunluk geçicidir. Bugün sadece var olmak yeterli. Aktivite yapmak zorunda değilsin. Seri korunacak.',
+  anxious:'Endişeler bazen bize yalan söyler. Şu an güvendesin. Sadece bir nefes. Sonrası gelir.',
+  empty:'Boşluk hissi de bir his. Onu itmene gerek yok. Bugün sadece burada olman yeter.',
+  sad:'Ağlamak güçlülüktür. Hissetmek güçlülüktür. Bugün kendin için burada olman güçlülüktür.',
+};
+function selMood(btn,key) {
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('gcTxt').textContent=moodMsgs[key];
+}
+function toggleMini(card) { card.classList.toggle('done'); }
+
+let breatheInterval, phaseIdx=0;
+const phases=['Yavaşça nefes al...','Tut...','Yavaşça ver...','Bekle...'];
+function openBreathe() {
+  document.getElementById('breatheOv').classList.add('show');
+  breatheInterval=setInterval(()=>{ phaseIdx=(phaseIdx+1)%phases.length; document.getElementById('bInst').textContent=phases[phaseIdx]; },4000);
+}
+function closeBreathe() { document.getElementById('breatheOv').classList.remove('show'); clearInterval(breatheInterval); phaseIdx=0; }
+
+function call112() {
+  if (confirm('112 Acil Servis aranacak. Devam etmek istiyor musunuz?')) window.location.href='tel:112';
+}
+
+/* ═══════════════════════════════════════
+   VERİ & İÇGÖRÜ
+═══════════════════════════════════════ */
+const WEEKS=[
+  { label:'3–9 Şubat',   counts:[7,5,6,7,4,2,0], narrative:'Bu hafta en güçlü gün Perşembeydi. Hafta sonu biraz düştü — ama 5/7 gün aktif kalmak harika.' },
+  { label:'10–16 Şubat', counts:[4,6,7,6,5,0,3], narrative:'Salı ve Çarşamba zirveydeydin! Cumartesi tatil moduydun — bu da bir hak. 6/7 gün aktif kaldın.' },
+  { label:'17–23 Şubat', counts:[3,5,6,7,3,1,0], narrative:'Bu hafta en çok Perşembe parlıyordun. Cumartesi biraz karardı — ama önceki günler güçlüydü.' },
+  { label:'24–25 Şubat', counts:[5,3,0,0,0,0,0], narrative:'Bu hafta yeni başlıyor. Pazartesi iyi bir başlangıç yaptın!' },
+];
+let currentWeek=2;
+let insightInited=false;
+
+function initInsightPage() {
+  document.getElementById('insightSub').textContent=profile.firstName+' · Şubat 2026';
+  document.getElementById('mcDate').textContent=new Date().toLocaleDateString('tr-TR',{weekday:'long',day:'numeric',month:'long'});
+  renderWeek();
+  if (!insightInited) {
+    insightInited=true;
+    buildHeatmap();
+    renderMonthBars();
+    generateMorningMessage();
+  }
+}
+
+function renderWeek() {
+  const w=WEEKS[currentWeek];
+  document.getElementById('weekRange').textContent=w.label;
+  document.getElementById('weekNarrative').textContent=`"${w.narrative}"`;
+  const colors=['rgba(255,200,100,.3)','rgba(255,180,70,.5)','rgba(255,160,50,.65)','rgba(255,140,40,.78)','#FF8C42','#FF6A1A','#E85000'];
+  const el=document.getElementById('dayBars');
+  el.innerHTML='';
+  const days=['Pt','Sa','Ça','Pe','Cu','Ct','Pz'];
+  const mx=Math.max(...w.counts,1);
+  const mxIdx=w.counts.indexOf(Math.max(...w.counts));
+  days.forEach((d,i)=>{
+    const h=w.counts[i]>0?Math.max(8,(w.counts[i]/mx)*68):4;
+    const ci=Math.min(Math.floor(w.counts[i]),colors.length-1);
+    const bw=document.createElement('div'); bw.className='bar-wrap';
+    bw.innerHTML=`<div class="bar-col${i===mxIdx?' best':''}" style="height:${h}px;background:${w.counts[i]>0?colors[ci]:'rgba(255,200,100,.1)'};"><div class="bar-num">${w.counts[i]}/7</div></div><div class="bar-day">${d}</div>`;
+    el.appendChild(bw);
+  });
+  const active=w.counts.filter(c=>c>0).length;
+  const avg=(w.counts.reduce((a,b)=>a+b,0)/7).toFixed(1);
+  const best=Math.max(...w.counts);
+  document.getElementById('weekStats').innerHTML=`<div class="ws-item"><div class="ws-num">${active}/7</div><div class="ws-lbl">Aktif Gün</div></div><div class="ws-item"><div class="ws-num">${avg}</div><div class="ws-lbl">Günlük Ort.</div></div><div class="ws-item"><div class="ws-num">${best}/7</div><div class="ws-lbl">En İyi Gün</div></div>`;
+}
+
+function changeWeek(dir) {
+  const n=currentWeek+dir;
+  if(n<0||n>=WEEKS.length) return;
+  currentWeek=n; renderWeek();
+}
+
+function buildHeatmap() {
+  const wrap=document.getElementById('heatmapWrap'); wrap.innerHTML='';
+  const today=new Date(2026,1,25);
+  const start=new Date(2026,0,1);
+  const months=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  function val(date) {
+    const diff=Math.floor((date-start)/86400000);
+    if(date>today) return -1; if(diff<0) return 0;
+    const s=diff*1234567%100;
+    return s<8?0:s<20?1:s<38?2:s<55?3:s<70?4:s<83?5:s<93?6:7;
+  }
+  for(let m=0;m<12;m++){
+    const ms=new Date(2026,m,1), me=new Date(2026,m+1,0);
+    const col=document.createElement('div'); col.className='hm-month-col';
+    const lbl=document.createElement('div'); lbl.className='hm-month-lbl'; lbl.textContent=months[m]; col.appendChild(lbl);
+    let wk=document.createElement('div'); wk.className='hm-week';
+    const dow=ms.getDay();
+    for(let p=0;p<dow;p++){const pad=document.createElement('div');pad.className='hm-day';pad.setAttribute('data-v','0');pad.style.opacity='0';wk.appendChild(pad);}
+    for(let d=1;d<=me.getDate();d++){
+      const date=new Date(2026,m,d), v=val(date);
+      const el=document.createElement('div');
+      el.className='hm-day'+(v===-1?' future':'');
+      el.setAttribute('data-v',v===-1?'0':v);
+      if(date.getDate()===today.getDate()&&date.getMonth()===today.getMonth()) el.classList.add('today');
+      const ds=date.toLocaleDateString('tr-TR',{day:'numeric',month:'long'});
+      const as=v===-1?'Henüz gelmedi':v===0?'Aktif değil':`${v}/7 aktivite`;
+      el.addEventListener('mouseenter',e=>{const t=document.getElementById('hmTooltip');t.textContent=`${ds} · ${as}`;t.classList.add('show');t.style.left=(e.clientX-t.offsetWidth/2)+'px';t.style.top=(e.clientY-40)+'px';});
+      el.addEventListener('mouseleave',()=>document.getElementById('hmTooltip').classList.remove('show'));
+      wk.appendChild(el);
+      if(date.getDay()===6||d===me.getDate()){col.appendChild(wk);wk=document.createElement('div');wk.className='hm-week';}
+    }
+    wrap.appendChild(col);
+  }
+}
+
+function renderMonthBars() {
+  const months=[{lbl:'Eyl',val:18,max:30},{lbl:'Eki',val:22,max:31},{lbl:'Kas',val:25,max:30},{lbl:'Ara',val:28,max:31},{lbl:'Oca',val:30,max:31},{lbl:'Şub',val:25,max:28}];
+  const el=document.getElementById('monthBars'); el.innerHTML='';
+  months.forEach(m=>{
+    const pct=Math.round(m.val/m.max*100);
+    const color=pct>=90?'#FF6A1A':pct>=70?'#FF8C42':pct>=50?'#FFB347':'rgba(255,180,70,.5)';
+    const row=document.createElement('div'); row.className='st-row';
+    row.innerHTML=`<div class="st-label">${m.lbl}</div><div class="st-bar-wrap"><div class="st-bar-fill" style="width:0%;background:${color};"></div></div><div class="st-val">${m.val}/${m.max}</div>`;
+    el.appendChild(row);
+    setTimeout(()=>row.querySelector('.st-bar-fill').style.width=pct+'%',100+months.indexOf(m)*80);
+  });
+}
+
+/* ═══════════════════════════════════════
+   CLAUDE API — SABAH MESAJI
+═══════════════════════════════════════ */
+async function generateMorningMessage() {
+  const msgEl=document.getElementById('mcMsg');
+  const refreshEl=document.getElementById('mcRefresh');
+  const iconEl=document.getElementById('refreshIcon');
+  msgEl.classList.add('loading'); msgEl.textContent='Senin için düşünüyorum...';
+  refreshEl.style.pointerEvents='none';
+  iconEl.style.animation='spin .8s linear infinite';
+  const w=WEEKS[currentWeek];
+  const activeDay=w.counts.filter(c=>c>0).length;
+  const weekAvg=(w.counts.reduce((a,b)=>a+b,0)/7).toFixed(1);
+  const todayDay=new Date().toLocaleDateString('tr-TR',{weekday:'long'});
+  const todayDate=new Date().toLocaleDateString('tr-TR',{day:'numeric',month:'long'});
+  const prompt=`Sen "Gün Işığım" adlı Türkçe bir kişisel gelişim uygulamasının yapay zeka asistanısın. Kullanıcıya her sabah kişisel, sıcak ve motive edici 2-3 cümlelik bir mesaj yaz.\n\nKullanıcı bilgileri:\n- İsim: ${USER.name}\n- Bugün: ${todayDay}, ${todayDate}\n- Aktif seri: ${USER.streak} gün\n- Bu hafta aktif gün: ${activeDay}/7\n- En güçlü gün: ${USER.bestDay}\n- En zayıf gün: ${USER.worstDay}\n\nMesaj şartları:\n- Türkçe, "Merhaba" ile başlama\n- Bugünün gününe özel bir şey söyle\n- Sıcak, samimi dil\n- 2-3 cümle, max 60 kelime\n- Tırnak işareti kullanma`;
+  try {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const text=data.content?.[0]?.text||'';
+    msgEl.classList.remove('loading');
+    msgEl.textContent=text||fallbackMsg();
+  } catch(e) {
+    msgEl.classList.remove('loading');
+    msgEl.textContent=fallbackMsg();
+  }
+  iconEl.style.animation=''; iconEl.textContent='✦'; refreshEl.style.pointerEvents='auto';
+}
+
+function fallbackMsg() {
+  const msgs=[
+    `${USER.streak} günlük serin devam ediyor — bu küçük bir mucize. ${USER.worstDay} biraz zorlu geçiyor ama ${USER.bestDay}leri nasıl parlıyorsun, biliyor musun?`,
+    `Bu sabah ${USER.name} olarak uyanmak ve ${USER.streak} günlük bir seriye sahip olmak — her gün verilen küçük bir karar. Bugün de o kararı ver.`,
+    `${USER.totalActivities||187} aktivite… her biri bir an, bir nefes, bir bağlantı. ${USER.worstDay} günlerin biraz sessiz geçiyor — belki bugün küçük bir sürpriz yaparsın kendine?`,
+    `${USER.streak} gündür burada olmak güzel. ${USER.bestDay} günleri en çok parlıyorsun. Bugün tek bir aktivite bile yeter, başlaman yeter.`,
+  ];
+  return msgs[Math.floor(Math.random()*msgs.length)];
+}
+
+/* ═══════════════════════════════════════
+   İSTATİSTİK
+═══════════════════════════════════════ */
+let weekChartInited=false;
+function initWeekChart() {
+  if(weekChartInited) return; weekChartInited=true;
+  const days=['Pt','Sa','Ça','Pe','Cu','Ct','Pz'];
+  const vals=[6,5,6,4,3,0,0];
+  const wrap=document.getElementById('weekBars'); wrap.innerHTML='';
+  days.forEach((d,i)=>{
+    const bw=document.createElement('div'); bw.className='ch-bar-wrap';
+    const h=vals[i]*13;
+    bw.innerHTML=`<div class="ch-bar" style="height:${h}px;opacity:${vals[i]?1:.25};"></div><div class="ch-day">${d}</div>`;
+    wrap.appendChild(bw);
+  });
+}
+
+/* ═══════════════════════════════════════
+   BAŞLAT
+═══════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded',()=>{
+  renderHomePeople();
+  renderAnonPeople();
+  applyProfileToUI();
+});
+</script>
+</body>
+</html>
